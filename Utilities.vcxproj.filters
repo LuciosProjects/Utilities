@@ -104,5 +104,8 @@
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp">
       <Filter>OtherTools\SRC</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

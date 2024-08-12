@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utilities;$(SolutionDir)Utilities\MathUtils\INC;$(SolutionDir)Utilities\Environment\INC;$(SolutionDir)Utilities\OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utilities;$(SolutionDir)Utilities\MathUtils\INC;$(SolutionDir)Utilities\Environment\INC;$(SolutionDir)Utilities\OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utilities;$(SolutionDir)Utilities\MathUtils\INC;$(SolutionDir)Utilities\Environment\INC;$(SolutionDir)Utilities\OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Utilities;$(SolutionDir)Utilities\MathUtils\INC;$(SolutionDir)Utilities\Environment\INC;$(SolutionDir)Utilities\OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="Environment\SRC\Atmosphere.cpp" />
     <ClCompile Include="Environment\SRC\EarthGeometry.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathUtils\SRC\MathUtils.cpp" />
     <ClCompile Include="MathUtils\SRC\Matrix.cpp" />
     <ClCompile Include="MathUtils\SRC\Quaternion.cpp" />
