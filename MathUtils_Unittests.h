@@ -20,6 +20,7 @@ namespace SM_Matrix_UT_variables
 void SM_Matrix_UT();
 namespace SM_Matrix_Unittests
 {
+	void ConstructionTest();
 	// Constructor unittests
 	// assignment unittests
 }

@@ -3,5 +3,10 @@
 
 void SM_Matrix_UT()
 {
-	
+	SM_Matrix_Unittests::ConstructionTest();
+}
+
+void SM_Matrix_Unittests::ConstructionTest()
+{
+
 }
