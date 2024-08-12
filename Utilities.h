@@ -39,6 +39,8 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 
+#include "MathUtils_Unittests.h"
+
 // Environment libraries
 #include "EnvironmentIncludes.h" // Includes of all Earth folder utilities
 

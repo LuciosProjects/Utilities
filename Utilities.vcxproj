@@ -155,8 +155,9 @@
     <ClInclude Include="MathUtils\INC\MathUtils.h" />
     <ClInclude Include="MathUtils\INC\Matrix.h" />
     <ClInclude Include="MathUtils\INC\Quaternion.h" />
+    <ClInclude Include="MathUtils\INC\SM_Matrix.hpp" />
+    <ClInclude Include="MathUtils_Unittests.h" />
     <ClInclude Include="OtherTools\INC\TransferFunc.h" />
-    <ClInclude Include="SM_Matrix.hpp" />
     <ClInclude Include="TypeDefinitions.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="UtilitiesVer.h" />
@@ -169,6 +170,7 @@
     <ClCompile Include="MathUtils\SRC\Matrix.cpp" />
     <ClCompile Include="MathUtils\SRC\Quaternion.cpp" />
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp" />
+    <ClCompile Include="SM_Matrix_Unittest.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
