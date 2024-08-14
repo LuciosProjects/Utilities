@@ -38,7 +38,7 @@ public:
 
 namespace Math
 {
-    template <class Type, size_t Num_Rows, size_t Num_Columns>
+    template <size_t Num_Rows, size_t Num_Columns, class Type = double>
     class SM_Matrix
     {
     private:
@@ -70,7 +70,6 @@ namespace Math
             }
             return *this;
         }
-
 
         bool CheckBounds(int row, int col)
         {
@@ -232,7 +231,7 @@ namespace Math
         {
             if (CompareDims(other))
             {
-                SM_Matrix<Type, Nrows, Ncolumns> MatSum(other.Buffer);
+                SM_Matrix<Nrows, Ncolumns, Type> MatSum(other.Buffer);
                 for (It = 0; It < NumEl; It++)
                 {
                     MatSum.Mat[It] = Mat[It] + other.Mat[It];
@@ -244,7 +243,7 @@ namespace Math
         // Addition by scalar (constant matrix of the same size, where Mat[i] = k)
         SM_Matrix operator+(const Type k)
         {
-            SM_Matrix<Type, Nrows, Ncolumns> MatSum(Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> MatSum(Buffer);
             for (It = 0; It < NumEl; It++)
             {
                 MatSum.Mat[It] = Mat[It] + k;
@@ -273,7 +272,7 @@ namespace Math
         {
             //if (CompareDims(other))
             //{
-            SM_Matrix<Type, Nrows, Ncolumns> MatSub(other.Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> MatSub(other.Buffer);
             for (It = 0; It < NumEl; It++)
             {
                 MatSub.Mat[It] = Mat[It] - other.Mat[It];
@@ -286,7 +285,7 @@ namespace Math
         // Subtraction by scalar (constant matrix of the same size, where Mat[i] = k)
         SM_Matrix operator-(const Type k)
         {
-            SM_Matrix<Type, Nrows, Ncolumns> MatSub(Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> MatSub(Buffer);
             for (It = 0; It < NumEl; It++)
             {
                 MatSub.Mat[It] = Mat[It] - k;
@@ -298,7 +297,7 @@ namespace Math
         // Self negation operator
         SM_Matrix operator-()
         {
-            SM_Matrix<Type, Nrows, Ncolumns> Neg(Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> Neg(Buffer);
             for (It = 0; It < NumEl; It++)
             {
                 Neg.Mat[It] = -Mat[It];
@@ -327,7 +326,7 @@ namespace Math
             if (Ncolumns == other.Nrows)
             {
                 int i, j, k;
-                SM_Matrix<Type, Nrows, other.Ncolumns> MatMul;
+                SM_Matrix<Nrows, other.Ncolumns, Type> MatMul;
                 for (i = 0; i < Nrows; i++) {
                     for (j = 0; j < other.Ncolumns; j++) {
                         for (k = 0; k < Ncolumns; k++) {
@@ -352,7 +351,7 @@ namespace Math
         {
             if (isSquare())
             {
-                SM_Matrix<Type, Nrows, Ncolumns> MatMul(other.Buffer);
+                SM_Matrix<Nrows, Ncolumns, Type> MatMul(other.Buffer);
                 int i, j, k;
                 for (i = 0; i < Nrows; i++) {
                     for (j = 0; j < other.Ncolumns; j++) {
@@ -385,7 +384,7 @@ namespace Math
         // Matrix division by scalar
         SM_Matrix operator/(const Type k)
         {
-            SM_Matrix<Type, Nrows, Ncolumns> MatDiv(Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> MatDiv(Buffer);
             for (It = 0; It < NumEl; It++) {
                 MatDiv.Mat[It] = Mat[It] / k;
             }
@@ -417,7 +416,7 @@ namespace Math
                 }
                 else if (exponent > 0)
                 {
-                    SM_Matrix<Type, Nrows, Ncolumns> Result(Buffer);
+                    SM_Matrix<Nrows, Ncolumns, Type> Result(Buffer);
                     Result.ValueCopy(this);
 
                     for (It = 1; It < exponent; It++) {
@@ -427,7 +426,7 @@ namespace Math
                 }
                 else
                 {
-                    SM_Matrix<Type, Nrows, Ncolumns> Result;
+                    SM_Matrix<Nrows, Ncolumns, Type> Result;
                     Result.ValueCopy(this->Invert());
                     Result = Result ^ (-exponent);
 
@@ -455,7 +454,7 @@ namespace Math
         SM_Matrix Identity()
         {
             int i, j;
-            SM_Matrix<Type, Nrows, Ncolumns> ID(Buffer);
+            SM_Matrix<Nrows, Ncolumns, Type> ID(Buffer);
             for (i = 0; i < Nrows; i++) {
                 for (j = 0; j < Ncolumns; j++) {
                     ID.Mat[i * Ncolumns + j] = (i == j);
@@ -480,6 +479,24 @@ namespace Math
             for (It = 0; It < NumEl; It++)
             {
                 Mat[It] = func(Mat[It]);
+            }
+            return res;
+        }
+        SM_Matrix ApplyEach(Type(*func)(Type, Type), Type& SecondArg)
+        {
+            SM_Matrix res(Buffer);
+            for (It = 0; It < NumEl; It++)
+            {
+                Mat[It] = func(Mat[It], SecondArg);
+            }
+            return res;
+        }
+        SM_Matrix ApplyEach(Type(*func)(Type&, Type&), Type& SecondArg)
+        {
+            SM_Matrix res(Buffer);
+            for (It = 0; It < NumEl; It++)
+            {
+                Mat[It] = func(Mat[It], SecondArg);
             }
             return res;
         }
@@ -587,7 +604,7 @@ namespace Math
         /* Minor of matrix given by (row,column) position */
         SM_Matrix Minor(int row, int col)
         {
-            SM_Matrix<Type, Nrows - 1, Ncolumns - 1> Minor;
+            SM_Matrix<Nrows - 1, Ncolumns - 1, Type> Minor;
             int i, j, m_tracker = 0;
             if (CheckBounds(row, col))
             {
@@ -608,7 +625,7 @@ namespace Math
         Type Det()
         {
             if (isSquare()) {
-                SM_Matrix<Type, Nrows, Nrows> L;
+                SM_Matrix<Nrows, Nrows, Type> L;
                 SM_Matrix U(Buffer);
                 LU_Decompose(L, U);
 
@@ -621,7 +638,7 @@ namespace Math
         SM_Matrix Adjugate()
         {
             SM_Matrix Adj(Buffer);
-            SM_Matrix<Type, Nrows - 1, Ncolumns - 1> _Minor;
+            SM_Matrix<Nrows - 1, Ncolumns - 1, Type> _Minor;
             int i, j;
             Type sign;
             bool ODD;
@@ -651,9 +668,9 @@ namespace Math
         }
 
         /* Matrix QR decomposition, Q is orthogonal to A & R is upper triangular matrix */
-        void QR_Decompose(SM_Matrix& Q, SM_Matrix<Type, Num_Columns, Num_Columns>& R)
+        void QR_Decompose(SM_Matrix& Q, SM_Matrix<Num_Columns, Num_Columns, Type>& R)
         {
-            SM_Matrix<Type, Nrows, 1> CurrentA;
+            SM_Matrix<Nrows, 1, Type> CurrentA;
             SM_Matrix U(this);
             Type Norm;
             int row, row_inloop, col;
@@ -711,7 +728,7 @@ namespace Math
         }
 
         /* Decompose a square matrix A to Lower triangular & Upper triangular matrices such that A = LU */
-        void LU_Decompose(SM_Matrix<Type, Num_Rows, Num_Rows>& L, SM_Matrix& U)
+        void LU_Decompose(SM_Matrix<Num_Rows, Num_Rows, Type>& L, SM_Matrix& U)
         {
             int i, j, k;
             Type Sum;
