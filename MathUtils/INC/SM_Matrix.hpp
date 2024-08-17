@@ -38,16 +38,21 @@ public:
 
 namespace Math
 {
-    template <size_t Num_Rows, size_t Num_Columns, class Type = double>
+    template <size_t Num_Rows = 1, size_t Num_Columns = 1, class Type = double>
     class SM_Matrix
     {
     private:
+        /************************************************************************/
+        /****************************** Assertions ******************************/
+        /************************************************************************/
+        static_assert(Num_Rows > 0, "Number of rows must be greater than 0.");
+        static_assert(Num_Columns > 0, "Number of columns must be greater than 0.");
+
         /************************************************************************/
         /**************************** Private members ***************************/
         /************************************************************************/
         int	        It; /* Iterator member */
         SM_RowProxy<Type>  Prxy;
-        //SM_Matrix<Type, NumRows, Num_Columns> Buffer;
         Type Buffer[Num_Rows * Num_Columns]; // Buffer member to serve as intermediate memory for matrix operations
 
         /************************************************************************/
@@ -109,20 +114,28 @@ namespace Math
         /**************************** Public members ****************************/
         /************************************************************************/
         Type Mat[Num_Rows * Num_Columns];
+
+        //Type* Mat;
         int	Nrows, Ncolumns, NumEl;
 
         /* Default SM_Matrix constructor */
         SM_Matrix() : Nrows(Num_Rows), Ncolumns(Num_Columns), NumEl(Num_Rows* Num_Columns)
         {
-            Zeroize();
+            Identity();
         }
 
         /* Predefined matrix dimensions & allocated memory constructor */
         SM_Matrix(Type* ref) : Nrows(Num_Rows), Ncolumns(Num_Columns), NumEl(Num_Rows* Num_Columns)
         {
-            Mat = ref;
+            //Mat = ref;
+            ValueCopy(ref);
         }
 
+        SM_Matrix(Type ref[Num_Rows][Num_Columns]) : Nrows(Num_Rows), Ncolumns(Num_Columns), NumEl(Num_Rows* Num_Columns)
+        {
+            //Mat = &ref[0][0];
+            ValueCopy(&ref[0][0]);
+        }
 
         SM_Matrix(SM_Matrix& ref) : Nrows(ref.Nrows), Ncolumns(ref.Ncolumns), NumEl(ref.Nrows* ref.Ncolumns)
         {
@@ -454,7 +467,7 @@ namespace Math
         SM_Matrix Identity()
         {
             int i, j;
-            SM_Matrix<Nrows, Ncolumns, Type> ID(Buffer);
+            SM_Matrix<Num_Rows, Num_Columns, Type> ID(Buffer);
             for (i = 0; i < Nrows; i++) {
                 for (j = 0; j < Ncolumns; j++) {
                     ID.Mat[i * Ncolumns + j] = (i == j);

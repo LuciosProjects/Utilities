@@ -165,7 +165,6 @@
   <ItemGroup>
     <ClCompile Include="Environment\SRC\Atmosphere.cpp" />
     <ClCompile Include="Environment\SRC\EarthGeometry.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathUtils\SRC\MathUtils.cpp" />
     <ClCompile Include="MathUtils\SRC\Matrix.cpp" />
     <ClCompile Include="MathUtils\SRC\Quaternion.cpp" />

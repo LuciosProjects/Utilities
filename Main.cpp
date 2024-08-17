@@ -1,8 +1,11 @@
-#include "Utilities.h"
-//#include "SM_Matrix.hpp"
+//#include "Utilities.h"
+#include "MathUtils_Unittests.h"
 
 int main(int argc, char** argv)
 {
-	SM_Matrix_UT();
+	if (SM_Matrix_UT())
+	{
+		std::cout << "SM_Matrix_UT Succeeded!" << std::endl;
+	}
 	return 0;
 }

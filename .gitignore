@@ -7,3 +7,7 @@
 /Utilities/x64/Debug/Utilities.tlog
 /Utilities/x64/Debug
 /x64/Debug
+*.idb
+*.pdb
+*.lastbuildstate
+/UtilitiesTestApp/x64
