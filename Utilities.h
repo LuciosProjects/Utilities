@@ -35,7 +35,7 @@
 
 // Local math libraries
 #include "MathUtils.h"
-//#include "SM_Matrix.hpp"
+#include "SM_Matrix.hpp"
 #include "Matrix.h"
 #include "Quaternion.h"
 

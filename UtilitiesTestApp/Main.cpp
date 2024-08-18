@@ -1,5 +1,4 @@
-//#include "Utilities.h"
-#include "MathUtils_Unittests.h"
+#include "Utilities.h"
 
 int main(int argc, char** argv)
 {
