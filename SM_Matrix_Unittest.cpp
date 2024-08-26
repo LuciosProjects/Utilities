@@ -8,6 +8,7 @@ namespace SM_Matrix_UT_variables
 	double ID_ref[3][3] = { {1.0, 0.0, 0.0},
 							{0.0, 1.0, 0.0},
 							{0.0, 0.0, 1.0} };
+	double ID_ref_1D[9] = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
 	double ZERO_ref[3][3] = { {0.0, 0.0, 0.0},
 								{0.0, 0.0, 0.0},
 								{0.0, 0.0, 0.0} };
@@ -36,7 +37,7 @@ namespace SM_Matrix_UT_variables
 											{11.0, 11.0, 11.0} };
 
 	// Multiplication
-	double Multiplication_right[4][1] = { { 1.0 },
+	double Multiplication_right[4][1] = {	{ 1.0 },
 											{ 2.0 },
 											{ 3.0 },
 											{ 4.0 } };
@@ -66,26 +67,26 @@ bool SM_Matrix_Unittests::ConstructionTest()
 {
 	bool MatCompare;
 	
-	Math::SM_Matrix<3, 3> Mat1;
-	Math::SM_Matrix<5, 6> Mat2(SM_Matrix_UT_variables::nonSquare);
-	Math::SM_Matrix<5, 6> Mat3(SM_Matrix_UT_variables::nonSquare[0]);
-	Math::SM_Matrix<5, 6> Mat4(Mat2);
+	Math::SM_Matrix Mat1_1D(3, 3, SM_Matrix_UT_variables::ID_ref_1D);
+	Math::SM_Matrix Mat1(3, 3, SM_Matrix_UT_variables::ID_ref);
+	//Math::SM_Matrix Mat2(5, 6, SM_Matrix_UT_variables::nonSquare);
+	//Math::SM_Matrix Mat3(5, 6, SM_Matrix_UT_variables::nonSquare[0]);
 
 	//std::cout << Mat1 << std::endl;
 	//std::cout << Mat2 << std::endl;
 	//std::cout << Mat3 << std::endl;
 
-	MatCompare = Mat2 == Mat4;
+	//MatCompare = Mat2 == Mat3;
 
-	if (MatCompare)
-	{
-		std::cout << "Construction test succeeded" << std::endl;
-	}
-	else
-	{
-		std::cout << "Construction test failed" << std::endl;
-	}
+	//if (MatCompare)
+	//{
+	//	std::cout << "Construction test succeeded" << std::endl;
+	//}
+	//else
+	//{
+	//	std::cout << "Construction test failed" << std::endl;
+	//}
 
-	return MatCompare;
-	//return false;
+	//return MatCompare;
+	return false;
 }
