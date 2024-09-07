@@ -5,6 +5,8 @@ bool SM_Matrix_UT();
 namespace SM_Matrix_Unittests
 {
 	bool ConstructionTest();
+	bool AssignmentTest();
+	bool AdditionTest();
 	
 	// assignment unittests
 }
