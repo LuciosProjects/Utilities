@@ -7,7 +7,8 @@ namespace SM_Matrix_Unittests
 	bool ConstructionTest();
 	bool AssignmentTest();
 	bool AdditionTest();
-	
+	bool SubtractionTest();
+
 	// assignment unittests
 }
 

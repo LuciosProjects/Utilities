@@ -1,53 +1,93 @@
 #ifndef _SM_MATRIX_H
 #define _SM_MATRIX_H
 
-#include <typeinfo>
-//#include <math.h>
-//#include <iostream>
+#include <array>
+#include <stdexcept>
+#include <iostream>
 
 /* SM_Matrix helper macros */
 #define _MATRIX_DIVPROTECT(num,den) (abs(den) < 1e-8) ? num : (num/den)
 
 /* SM_Matrix global definitions */
 #define _MATRIX_MAX_DIM 50
-class SM_Matrix_Buffer
-{
-private:
-    double Buffer[_MATRIX_MAX_DIM][_MATRIX_MAX_DIM] = { 0.0 };
-    double* Address = &Buffer[0][0];
+#define _SM_Matrix_NumBufferCycles 3
+
+template <typename Type = double, size_t N = _SM_Matrix_NumBufferCycles, size_t BufferSize = _MATRIX_MAX_DIM*_MATRIX_MAX_DIM>
+class CyclicalBuffer {
 public:
-    SM_Matrix_Buffer() {};
-    ~SM_Matrix_Buffer() {};
+    class BufferHandle {
+    public:
+        BufferHandle(CyclicalBuffer* parent, Type* buffer) : parent(parent), buffer(buffer) {}
 
-    double* const get_ptr()
-    {
-        return Address;
+        // Copy constructor
+        BufferHandle(const BufferHandle& other) = delete;
+
+        // Move constructor (to allow ownership transfer)
+        BufferHandle(BufferHandle&& other) noexcept : parent(other.parent), buffer(other.buffer) {
+            other.buffer = nullptr;  // Invalidate the other handle
+        }
+
+        // Destructor - Automatically releases the buffer
+        ~BufferHandle() {
+            if (buffer) {
+                parent->releaseBuffer(buffer);
+            }
+        }
+
+        Type* getBuffer() const {
+            return buffer;
+        }
+
+    private:
+        CyclicalBuffer* parent;
+        Type* buffer;
+    };
+
+    CyclicalBuffer() {
+        int i;
+
+        currentIndex = 0;
+        bufferOccupied.fill(false);  // Mark all buffers as free initially
+
+        // All buffers are initialized with zeros
+        for (i = 0; i < N; i++) 
+        {
+            buffers[i].fill((Type)0);
+        }
     }
 
-    bool Occupied = false;
-};
-static SM_Matrix_Buffer _SM_Matrix_1st_Buffer_;
-static SM_Matrix_Buffer _SM_Matrix_2nd_Buffer_;
+    // Get the current available buffer
+    BufferHandle getNextBuffer() {
+        int i, bufferIndex;
+        for (i = 0; i < N; i++) {
+            bufferIndex = (currentIndex + i) % N;
+            if (!bufferOccupied[bufferIndex]) {
+                bufferOccupied[bufferIndex] = true;
+                currentIndex = (bufferIndex + 1) % N;
+                return BufferHandle(this, buffers[bufferIndex].data());
+            }
+        }
+        throw std::runtime_error("No free buffers available.");
+    }
 
-class SM_Matrix_Buffer_Guard
-{
+    // Release a specific buffer
+    void releaseBuffer(Type* buffer) {
+        for (size_t i = 0; i < N; ++i) {
+            if (buffers[i].data() == buffer) {
+                bufferOccupied[i] = false;
+                return;
+            }
+        }
+        throw std::invalid_argument("Invalid buffer address.");
+    }
+
 private:
-    SM_Matrix_Buffer* Buffer;
-public:
-    SM_Matrix_Buffer_Guard(SM_Matrix_Buffer* bfr)
-    {
-        Buffer = bfr;
-        Buffer->Occupied = true;
-    }
-    ~SM_Matrix_Buffer_Guard() {
-        Buffer->Occupied = false;
-    }
-
-    double* const get_buffer_ptr()
-    {
-        return Buffer->get_ptr();
-    }
+    std::array<std::array<Type, BufferSize>, N> buffers;    // A fixed number of buffers
+    std::array<bool, N> bufferOccupied;                     // Keeps track of occupied buffers
+    size_t currentIndex;                                    // Tracks the next available buffer in the cycle
 };
+
+static CyclicalBuffer<> SM_Matrix_BufferManager;
 
 template<class Type>
 class SM_RowProxy {
@@ -95,21 +135,15 @@ namespace Math
         /************************ Utility private methods ************************/
         /************************************************************************/
 
-        /* Finds available buffer to be used in a matrix operation */
-        SM_Matrix_Buffer* _Get_SM_Matrix_Buffer()
+        SM_Matrix getResultMat(const int row, const int col)
         {
-            if (!_SM_Matrix_1st_Buffer_.Occupied)
-            {
-                return &_SM_Matrix_1st_Buffer_;
-            }
-            else if (!_SM_Matrix_2nd_Buffer_.Occupied)
-            {
-                return &_SM_Matrix_2nd_Buffer_;
-            }
-            else
-            {
-                std::runtime_error("All SM_Matrix buffers are occupied, vannot perform operation");
-            }
+            auto resultBufferHandle = SM_Matrix_BufferManager.getNextBuffer();
+
+            SM_Matrix ResMat(row, col, resultBufferHandle.getBuffer());
+
+            ResMat.Zeroize();
+
+            return ResMat;
         }
 
         /* Copies elements to matrix from a given SM_Matrix object input */
@@ -168,6 +202,7 @@ namespace Math
         //    }
         //    return sqrt(Norm);
         //}
+
     public:
         /************************************************************************/
         /**************************** Public members ****************************/
@@ -276,6 +311,14 @@ namespace Math
             //return *this;
         }
 
+        /* Scalar assignment */
+        void operator=(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++) {
+                Mat[It] = k;
+            }
+        }
+
         ///* Equality operators */
 
         /* '==' operator overload */
@@ -309,12 +352,9 @@ namespace Math
         // Matrix addition
         SM_Matrix operator+(const SM_Matrix& other)
         {
-            SM_Matrix_Buffer_Guard Guard(_Get_SM_Matrix_Buffer());
-
             if (CompareDims(other))
             {
-                SM_Matrix MatSum(Nrows, Ncolumns, Guard.get_buffer_ptr());
-                MatSum.Zeroize();
+                SM_Matrix MatSum = getResultMat(Nrows, Ncolumns);
 
                 for (It = 0; It < NumEl; It++)
                 {
@@ -325,83 +365,84 @@ namespace Math
             }
         }
 
-        //// Addition by scalar (constant matrix of the same size, where Mat[i] = k)
-        //SM_Matrix operator+(const Type k)
-        //{
-        //    SM_Matrix<Nrows, Ncolumns, Type> MatSum;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        MatSum.Mat[It] = Mat[It] + k;
-        //    }
+        // Addition by scalar (constant matrix of the same size, where Mat[i] = k)
+        SM_Matrix operator+(const Type k)
+        {
+            SM_Matrix MatSum = getResultMat(Nrows, Ncolumns);
 
-        //    return MatSum;
-        //}
+            for (It = 0; It < NumEl; It++)
+            {
+                MatSum.Mat[It] = Mat[It] + k;
+            }
 
-        //// Addition assignment operator
-        //SM_Matrix operator+=(const SM_Matrix& other)
-        //{
-        //    //if (CompareDims(other))
-        //    //{
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Mat[It] += other.Mat[It];
-        //    }
-        //    return *this;
-        //    //}
-        //}
+            return MatSum;
+        }
 
-        //// Subtraction operators
+        // Addition assignment operator
+        SM_Matrix operator+=(const SM_Matrix& other)
+        {
+            if (CompareDims(other))
+            {
+                for (It = 0; It < NumEl; It++)
+                {
+                    Mat[It] += other.Mat[It];
+                }
+                return *this;
+            }
+        }
 
-        //// Matrix subtraction
-        //SM_Matrix operator-(const SM_Matrix& other)
-        //{
-        //    //if (CompareDims(other))
-        //    //{
-        //    SM_Matrix<Nrows, Ncolumns, Type> MatSub(other.Buffer);
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        MatSub.Mat[It] = Mat[It] - other.Mat[It];
-        //    }
+        // Subtraction operators
 
-        //    return MatSub;
-        //    //}
-        //}
+        // Matrix subtraction
+        SM_Matrix operator-(const SM_Matrix& other)
+        {
+            if (CompareDims(other))
+            {
+                SM_Matrix MatSub = getResultMat(Nrows, Ncolumns);
+                for (It = 0; It < NumEl; It++)
+                {
+                    MatSub.Mat[It] = Mat[It] - other.Mat[It];
+                }
 
-        //// Subtraction by scalar (constant matrix of the same size, where Mat[i] = k)
-        //SM_Matrix operator-(const Type k)
-        //{
-        //    SM_Matrix<Nrows, Ncolumns, Type> MatSub;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        MatSub.Mat[It] = Mat[It] - k;
-        //    }
+                return MatSub;
+            }
+        }
 
-        //    return MatSub;
-        //}
+        // Subtraction by scalar (constant matrix of the same size, where Mat[i] = k)
+        SM_Matrix operator-(const Type k)
+        {
+            SM_Matrix MatSub = getResultMat(Nrows, Ncolumns);
+            for (It = 0; It < NumEl; It++)
+            {
+                MatSub.Mat[It] = Mat[It] - k;
+            }
 
-        //// Self negation operator
-        //SM_Matrix operator-()
-        //{
-        //    SM_Matrix<Nrows, Ncolumns, Type> Neg;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Neg.Mat[It] = -Mat[It];
-        //    }
-        //    return Neg;
-        //}
+            return MatSub;
+        }
 
-        //// Subtraction assignment operator
-        //SM_Matrix operator-=(const SM_Matrix& other)
-        //{
-        //    //if (CompareDims(other))
-        //    //{
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Mat[It] -= other.Mat[It];
-        //    }
-        //    return *this;
-        //    //}
-        //}
+        // Self negation operator
+        SM_Matrix operator-()
+        {
+            SM_Matrix Neg = getResultMat(Nrows, Ncolumns);
+            for (It = 0; It < NumEl; It++)
+            {
+                Neg.Mat[It] = -Mat[It];
+            }
+            return Neg;
+        }
+
+        // Subtraction assignment operator
+        SM_Matrix operator-=(const SM_Matrix& other)
+        {
+            if (CompareDims(other))
+            {
+                for (It = 0; It < NumEl; It++)
+                {
+                    Mat[It] -= other.Mat[It];
+                }
+                return *this;
+            }
+        }
 
         //// Multiplication operators
 

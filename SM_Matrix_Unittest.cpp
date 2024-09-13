@@ -6,15 +6,22 @@
 namespace SM_Matrix_UT_variables
 {
 	double MutableMat[3][3] = { 0.0 };
+
 	double ID_ref[3][3] = { {1.0, 0.0, 0.0},
 							{0.0, 1.0, 0.0},
 							{0.0, 0.0, 1.0} };
+
 	double ID_ref_1D[9] = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
-	double ZERO_ref[3][3] = { {0.0, 0.0, 0.0},
+
+	double ZERO_ref[3][3] = {	{0.0, 0.0, 0.0},
 								{0.0, 0.0, 0.0},
 								{0.0, 0.0, 0.0} };
 
-	double nonSquare[5][6] = { { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
+	double OnesMat[3][3] = {	{1.0, 1.0, 1.0},
+								{1.0, 1.0, 1.0},
+								{1.0, 1.0, 1.0} };
+
+	double nonSquare[5][6] = {  { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
 								{ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 },
 								{ 1.0, 0.0, 1.0, 0.0, 1.0, 0.0 },
 								{ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 },
@@ -24,15 +31,43 @@ namespace SM_Matrix_UT_variables
 	double Addition_A[3][3] = { { 1.0, 2.0, 3.0 },
 								{ 4.0, 5.0, 6.0 } ,
 								{ 7.0, 8.0, 9.0 } };
+
 	double Addition_B[3][3] = { { 9.0, 8.0, 7.0 },
 								{ 6.0, 5.0, 4.0 } ,
 								{ 3.0, 2.0, 1.0 } };
+
+	double Addition_ApB_Result[3][3] = {{ 10.0, 10.0, 10.0 },
+										{ 10.0, 10.0, 10.0 } ,
+										{ 10.0, 10.0, 10.0 } };
+
 	double Addition_C[3][3] = { { 1.0, 1.0, 1.0 },
 								{ 1.0, 1.0, 1.0 } ,
 								{ 1.0, 1.0, 1.0 } };
-	double Addition_ref[3][3] = { {10.0, 10.0, 10.0},
+
+	double Addition_ApBpC_Result[3][3] = {	{ 11.0, 11.0, 11.0 },
+											{ 11.0, 11.0, 11.0 } ,
+											{ 11.0, 11.0, 11.0 } };
+
+	double Addition_D[3][3] = { { 2.0, 2.0, 2.0 },
+								{ 2.0, 2.0, 2.0 } ,
+								{ 2.0, 2.0, 2.0 } };
+
+	double Addition_ApBpCpD_Result[3][3] = {{ 13.0, 13.0, 13.0 },
+											{ 13.0, 13.0, 13.0 } ,
+											{ 13.0, 13.0, 13.0 } };
+
+	double Addition_MatpK_Result[3][3] = {	{ 14.0, 14.0, 14.0 },
+											{ 14.0, 14.0, 14.0 } ,
+											{ 14.0, 14.0, 14.0 } };
+
+	double Addition_MatpOnes_Result[3][3] = {	{ 15.0, 15.0, 15.0 },
+												{ 15.0, 15.0, 15.0 } ,
+												{ 15.0, 15.0, 15.0 } };
+
+	double Addition_ref[3][3] = {	{10.0, 10.0, 10.0},
 									{10.0, 10.0, 10.0},
 									{10.0, 10.0, 10.0} };
+
 	double Multiple_Additions_ref[3][3] = { {11.0, 11.0, 11.0},
 											{11.0, 11.0, 11.0},
 											{11.0, 11.0, 11.0} };
@@ -42,25 +77,47 @@ namespace SM_Matrix_UT_variables
 											{ 2.0 },
 											{ 3.0 },
 											{ 4.0 } };
+
 	double Multiplication_left[1][4] = { { 1.0, 2.0, 3.0, 4.0 } };
+
 	double Multiplication_ref_1[3][3] = { 0.0 };
-	double Multiplication_ref_2[4][4] = { { 1.0, 2.0,  3.0,  4.0 },
+
+	double Multiplication_ref_2[4][4] = {	{ 1.0, 2.0,  3.0,  4.0 },
 											{ 2.0, 4.0,  6.0,  8.0 },
 											{ 3.0, 6.0,  9.0, 12.0 },
 											{ 4.0, 8.0, 12.0, 16.0 } };
+
 	double Multiple_Multiplication_ref = { 0.0 };
+}
+
+void PresentTestResult(const char* str, SM_Matrix<>& Res)
+{
+	std::cout << str << "\n" << Res << std::endl;
 }
 
 bool SM_Matrix_UT()
 {
+	bool SM_Matrix_UT_Success;
 	bool Contruction_UT_Success = false, Assignment_UT_success = false;
-	bool Addition_UT_Success = false;
+	bool Addition_UT_Success = false, Subtraction_UT_Success = false;
 
 	Contruction_UT_Success = SM_Matrix_Unittests::ConstructionTest();
 	Assignment_UT_success = SM_Matrix_Unittests::AssignmentTest();
 	Addition_UT_Success = SM_Matrix_Unittests::AdditionTest();
+	Subtraction_UT_Success = SM_Matrix_Unittests::SubtractionTest();
 
-	return (Contruction_UT_Success && Assignment_UT_success && Addition_UT_Success);
+	SM_Matrix_UT_Success = Contruction_UT_Success && Assignment_UT_success && Addition_UT_Success && Subtraction_UT_Success;
+
+	if (SM_Matrix_UT_Success)
+	{
+		std::cout << "\nSM_Matrix_UT Succeeded!" << std::endl;
+	}
+	else
+	{
+		std::cout << "\nSM_Matrix_UT Failed!" << std::endl;
+	}
+
+	return SM_Matrix_UT_Success;
 }
 
 bool SM_Matrix_Unittests::ConstructionTest()
@@ -87,7 +144,8 @@ bool SM_Matrix_Unittests::ConstructionTest()
 			return false;
 		}
 	}
-	std::cout << "1D pointer construction operator succeeded" << std::endl;
+	PresentTestResult("1D pointer construction operator succeeded", Mat1_1D);
+	//std::cout << "1D pointer construction operator succeeded" << std::endl;
 
 	for (i = 0; i < Mat1.Nrows; i++)
 	{
@@ -102,7 +160,8 @@ bool SM_Matrix_Unittests::ConstructionTest()
 		}
 		
 	}
-	std::cout << "2D pointer construction operator succeeded" << std::endl;
+	PresentTestResult("2D pointer construction operator succeeded", Mat1);
+	//std::cout << "2D pointer construction operator succeeded" << std::endl;
 
 	// Comparison test
 	if (Mat1 == Mat1_copy)
@@ -155,7 +214,8 @@ bool SM_Matrix_Unittests::AssignmentTest()
 	}
 	else
 	{
-		std::cout << "2D assignment succeeded" << std::endl;
+		PresentTestResult("2D assignment succeeded", Mat);
+		//std::cout << "2D assignment succeeded" << std::endl;
 	}
 
 	if (Mat[0][0] != temp)
@@ -182,7 +242,8 @@ bool SM_Matrix_Unittests::AssignmentTest()
 	}
 	else
 	{
-		std::cout << "Matrix copy succeeded" << std::endl;
+		PresentTestResult("Matrix copy succeeded", Mat);
+		//std::cout << "Matrix copy succeeded" << std::endl;
 	}
 
 	Mat[0][0] = 6.0;
@@ -205,7 +266,8 @@ bool SM_Matrix_Unittests::AssignmentTest()
 			}
 		}
 	}
-	std::cout << "Matrix 1D copy succeeded" << std::endl;
+	PresentTestResult("Matrix 1D copy succeeded", Mat);
+	//std::cout << "Matrix 1D copy succeeded" << std::endl;
 
 	Mat = &SM_Matrix_UT_variables::Addition_A[0][0];
 	for (i = 0; i < Mat.Nrows; i++)
@@ -233,7 +295,8 @@ bool SM_Matrix_Unittests::AssignmentTest()
 			}
 		}
 	}
-	std::cout << "Matrix 2D copy succeeded" << std::endl;
+	PresentTestResult("Matrix 2D copy succeeded", Mat);
+	//std::cout << "Matrix 2D copy succeeded" << std::endl;
 
 	Mat.Zeroize();
 	for (i = 0; i < Mat.Nrows; i++)
@@ -249,7 +312,8 @@ bool SM_Matrix_Unittests::AssignmentTest()
 			}
 		}
 	}
-	std::cout << "Matrix zeroize method succeeded" << std::endl;
+	PresentTestResult("Matrix zeroize method succeeded", Mat);
+	//std::cout << "Matrix zeroize method succeeded" << std::endl;
 
 	Mat.Identity();
 	for (i = 0; i < Mat.Nrows; i++)
@@ -261,11 +325,13 @@ bool SM_Matrix_Unittests::AssignmentTest()
 				std::cout << "Matrix identity method failed" << std::endl;
 				std::cout << "Matrix:" << std::endl;
 				std::cout << Mat << std::endl;
+
 				return false;
 			}
 		}
 	}
-	std::cout << "Matrix identity method succeeded" << std::endl;
+	PresentTestResult("Matrix identity method succeeded", Mat);
+	//std::cout << "Matrix identity method succeeded" << std::endl;
 
 	Mat.Zeroize();
 
@@ -282,17 +348,289 @@ bool SM_Matrix_Unittests::AdditionTest()
 	SM_Matrix Addition_A(3, 3, SM_Matrix_UT_variables::Addition_A);
 	SM_Matrix Addition_B(3, 3, SM_Matrix_UT_variables::Addition_B);
 	SM_Matrix Addition_C(3, 3, SM_Matrix_UT_variables::Addition_C);
+	SM_Matrix Addition_D(3, 3, SM_Matrix_UT_variables::Addition_D);
+	SM_Matrix OnesMat(3, 3, SM_Matrix_UT_variables::OnesMat);
+
+	int i, j;
 
 	// Header
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "------------------------------- Addition Unittest ------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 
-	std::cout << "Performing: Addition_A + Addition_B" << std::endl;
-	std::cout << "Addition_A = \n" << Addition_A << std::endl;
-	std::cout << "Addition_B = \n" << Addition_B << std::endl;
+	// A + B Test
+	std::cout << "Performing: Res1 = A + B" << std::endl;
+	std::cout << "A = \n" << Addition_A << std::endl;
+	std::cout << "B = \n" << Addition_B << std::endl;
 
 	ResMat = Addition_A + Addition_B;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 10.0)
+			{
+				std::cout << "A + B addition failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApB_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApB_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("A + B addition succeeded", ResMat);
+	//std::cout << "A + B addition succeeded" << std::endl;
+
+	ResMat.Zeroize();
+
+	// A + B + C Test
+	std::cout << "Performing: Res2 = A + B + C" << std::endl;
+	std::cout << "C = \n" << Addition_C << std::endl;
+	ResMat = Addition_A + Addition_B + Addition_C;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 11.0)
+			{
+				std::cout << "A + B + C addition failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpC_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpC_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("A + B + C addition succeeded", ResMat);
+	//std::cout << "A + B + C addition succeeded" << std::endl;
+
+	ResMat.Zeroize();
+
+	// A + B + C + D Test
+	std::cout << "Performing: Res3 = A + B + C + D" << std::endl;
+	std::cout << "D = \n" << Addition_D << std::endl;
+	ResMat = Addition_A + Addition_B + Addition_C + Addition_D;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 13.0)
+			{
+				std::cout << "A + B + C + D addition failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("A + B + C + D addition succeeded", ResMat);
+	//std::cout << "A + B + C + D addition succeeded" << std::endl;
+
+	// Scalar addition
+	std::cout << "Performing: Res4 = Res3 + 1 (Scalar addition test)" << std::endl;
+	std::cout << "Res3 = \n" << ResMat << std::endl;
+	ResMat = ResMat + 1;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 14.0)
+			{
+				std::cout << "Scalar addition failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpK_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpK_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("Scalar addition succeeded", ResMat);
+	//std::cout << "Scalar addition succeeded" << std::endl;
+
+	// Addition assignment 
+	std::cout << "Performing: Res5 = Res4 + OnesMat (Addition assignment test with SM_Matrix object)" << std::endl;
+	std::cout << "Res4 = \n" << ResMat << std::endl;
+
+	ResMat += OnesMat;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 15.0)
+			{
+				std::cout << "Addition assignment failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpOnes_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpOnes_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("Addition assignment succeeded", ResMat);
+	//std::cout << "Addition assignment succeeded" << std::endl;
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	return true;
+}
+
+bool SM_Matrix_Unittests::SubtractionTest()
+{
+	double res_arr[3][3] = { 0.0 };
+	SM_Matrix ResMat(3, 3, res_arr);
+	ResMat = 15.0; // Assigning 15 to every cell in the matrix
+
+	SM_Matrix OnesMat(3, 3, SM_Matrix_UT_variables::OnesMat);
+	SM_Matrix Another_OnesMat(3, 3, SM_Matrix_UT_variables::MutableMat);
+	Another_OnesMat = 1.0;
+
+	int i, j;
+
+	// Header
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "----------------------------- Subtraction Unittest -----------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+	// A - B
+	std::cout << "Performing: Res1 = A - B" << std::endl;
+	std::cout << "A = \n" << ResMat << std::endl;
+	std::cout << "B = \n" << OnesMat << std::endl;
+
+	ResMat = ResMat - OnesMat;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 14.0)
+			{
+				std::cout << "A - B subtraction failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpK_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpK_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("A - B subtraction succeeded", ResMat);
+	//std::cout << "A - B subtraction succeeded" << std::endl;
+
+	ResMat = 15.0;
+
+	// A - B - C
+	std::cout << "Performing: Res1 = A - B - C" << std::endl;
+	std::cout << "C = \n" << Another_OnesMat << std::endl;
+
+	ResMat = ResMat - OnesMat - Another_OnesMat;
+
+	for (i = 0; i < ResMat.Nrows; i++)
+	{
+		for (j = 0; j < ResMat.Ncolumns; j++)
+		{
+			if (ResMat[i][j] != 13.0)
+			{
+				std::cout << "A - B - C subtraction failed" << std::endl;
+				std::cout << "Result: \n" << ResMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < ResMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
+					for (j = 1; j < ResMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("A - B - C subtraction succeeded", ResMat);
+	//std::cout << "A - B - C subtraction succeeded" << std::endl;
+
+	// Scalar subtraction
+
+	// Subtraction assignment
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+	Another_OnesMat.Zeroize();
 
 	return false;
 }
