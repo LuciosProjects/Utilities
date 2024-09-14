@@ -322,7 +322,7 @@ namespace Math
         ///* Equality operators */
 
         /* '==' operator overload */
-        bool operator==(const SM_Matrix other)
+        bool operator==(const SM_Matrix& other)
         {
             if (CompareDims(other))
             {
@@ -342,7 +342,7 @@ namespace Math
         }
 
         /* '!=' operator overload */
-        bool operator!=(const SM_Matrix other)
+        bool operator!=(const SM_Matrix& other)
         {
             return !(*this == other);
         }
@@ -366,7 +366,7 @@ namespace Math
         }
 
         // Addition by scalar (constant matrix of the same size, where Mat[i] = k)
-        SM_Matrix operator+(const Type k)
+        SM_Matrix operator+(const Type& k)
         {
             SM_Matrix MatSum = getResultMat(Nrows, Ncolumns);
 
@@ -388,6 +388,15 @@ namespace Math
                     Mat[It] += other.Mat[It];
                 }
                 return *this;
+            }
+        }
+
+        // Scalar addition assignment operator
+        void operator+=(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++)
+            {
+                Mat[It] += k;
             }
         }
 
@@ -444,66 +453,72 @@ namespace Math
             }
         }
 
-        //// Multiplication operators
+        // Scalar subtraction assignment operator
+        void operator-=(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++)
+            {
+                Mat[It] -= k;
+            }
+        }
 
-        //// Matrix multiplication by matrix (for now only supports multiplications of matrices of the same size)
-        //SM_Matrix operator*(const SM_Matrix& other)
-        //{
-        //    if (Ncolumns == other.Nrows)
-        //    {
-        //        int i, j, k;
-        //        SM_Matrix<Nrows, other.Ncolumns, Type> MatMul;
-        //        for (i = 0; i < Nrows; i++) {
-        //            for (j = 0; j < other.Ncolumns; j++) {
-        //                for (k = 0; k < Ncolumns; k++) {
-        //                    MatMul.Mat[i * other.Ncolumns + j] += Mat[i * Ncolumns + k] * other.Mat[k * other.Ncolumns + j];
-        //                }
-        //            }
-        //        }
-        //        return MatMul;
-        //    }
-        //}
+        // Multiplication operators
 
-        //// Matrix multiplication by scalar k
-        //void operator*(const Type k)
-        //{
-        //    for (It = 0; It < NumEl; It++) {
-        //        Mat[It] = Mat[It] * k;
-        //    }
-        //}
+        // Matrix multiplication by matrix (for now only supports multiplications of matrices of the same size)
+        SM_Matrix operator*(const SM_Matrix& other)
+        {
+            if (Ncolumns == other.Nrows)
+            {
+                int i, j, k;
+                SM_Matrix MatMul = getResultMat(Nrows, other.Ncolumns);
+                
+                for (i = 0; i < Nrows; i++) {
+                    for (j = 0; j < other.Ncolumns; j++) {
+                        for (k = 0; k < Ncolumns; k++) {
+                            MatMul.Mat[i * other.Ncolumns + j] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[k * other.Ncolumns + j];
+                        }
+                    }
+                }
+                return MatMul;
+            }
+        }
 
-        //// Matrix multiplication assignment by matrix (applies only to square matrices)
-        //SM_Matrix operator*=(const SM_Matrix& other)
-        //{
-        //    if (isSquare())
-        //    {
-        //        SM_Matrix<Nrows, Ncolumns, Type> MatMul;
-        //        int i, j, k;
-        //        for (i = 0; i < Nrows; i++) {
-        //            for (j = 0; j < other.Ncolumns; j++) {
-        //                MatMul.Mat[i * other.Ncolumns + j] = 0;
-        //                for (k = 0; k < Ncolumns; k++) {
-        //                    MatMul.Mat[i * other.Ncolumns + j] += Mat[i * Ncolumns + k] * other.Mat[k * other.Ncolumns + j];
-        //                }
-        //            }
-        //        }
+        // Matrix multiplication by scalar k
+        SM_Matrix operator*(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++) {
+                Mat[It] = Mat[It] * k;
+            }
+            return *this;
+        }
 
-        //        ValueCopy(MatMul);
-        //        //for (It = 0; It < NumEl; It++)
-        //        //{
-        //        //    Mat[It] = MatMul.Mat[It];
-        //        //}
-        //    }
-        //    return *this;
-        //}
+        // Matrix multiplication assignment by matrix (applies only to square matrices)
+        void operator*=(const SM_Matrix& other)
+        {
+            if (isSquare())
+            {
+                SM_Matrix MatMul = getResultMat(Nrows, Ncolumns);
+                int i, j, k;
 
-        //// Matrix multiplication assignment by scalar
-        //void operator*=(const Type k)
-        //{
-        //    for (It = 0; It < NumEl; It++) {
-        //        Mat[It] *= k;
-        //    }
-        //}
+                for (i = 0; i < Nrows; i++) {
+                    for (j = 0; j < other.Ncolumns; j++) {
+                        //MatMul.Mat[i * other.Ncolumns + j] = 0;
+                        for (k = 0; k < Ncolumns; k++) {
+                            MatMul.Mat[i * other.Ncolumns + j] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[k * other.Ncolumns + j];
+                        }
+                    }
+                }
+                *this = MatMul;
+            }
+        }
+
+        // Matrix multiplication assignment by scalar
+        void operator*=(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++) {
+                Mat[It] *= k;
+            }
+        }
 
         //// Division operators
 
@@ -585,7 +600,6 @@ namespace Math
                     Mat[_2D_to_1D_indexing(i, j)] = (Type)(i == j);
                 }
             }
-            //return *this;
         }
 
         ///* Application of a single argument function to the object */

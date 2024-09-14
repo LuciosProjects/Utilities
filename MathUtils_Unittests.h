@@ -8,6 +8,8 @@ namespace SM_Matrix_Unittests
 	bool AssignmentTest();
 	bool AdditionTest();
 	bool SubtractionTest();
+	bool MultiplicationTest();
+	bool DivisionTest();
 
 	// assignment unittests
 }
