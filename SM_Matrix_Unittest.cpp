@@ -1,4 +1,4 @@
-#include "Utilities.h"
+﻿#include "Utilities.h"
 
 /****************************************************************/
 /********************** Unittest references *********************/
@@ -98,6 +98,31 @@ namespace SM_Matrix_UT_variables
 											{ 8.0, 16.0, 24.0, 32.0 } };
 
 	double Multiple_Multiplication_ref = { 0.0 };
+
+	double LU_ref[4][6] = { { 1.0, 2.0,  3.0,  4.0,  5.0,  6.0 },
+							{ 2.0, 4.0,  6.0,  8.0, 10.0, 12.0 },
+							{ 3.0, 6.0,  9.0, 12.0, 15.0, 18.0 },
+							{ 4.0, 8.0, 12.0, 16.0, 20.0, 24.0 } };
+
+	double L_ref[4][4] = {	{ 1.0, 0.0, 0.0, 0.0 },
+							{ 2.0, 1.0, 0.0, 0.0 },
+							{ 3.0, 0.0, 1.0, 0.0 }, 
+							{ 4.0, 0.0, 0.0, 1.0 }};
+
+	double U_ref[4][6] = {	{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
+							{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+							{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, 
+							{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
+
+	double Invertible_ref[4][4] = {	{ 1.0, 0.0, 0.0, 0.0 },
+									{ 2.0, 4.0, 0.0, 0.0 },
+									{ 0.0, 2.0, 4.0, 0.0 },
+									{ 0.0, 0.0, 2.0, 1.0 } };
+
+	double Inverse_ref[4][4] = {{ 1.0, -0.50,  1.0, -0.50 }, 
+								{ 0.0,  0.25, -0.5,  0.25 },
+								{ 0.0,  0.00,  1.0, -0.50 },
+								{ 0.0,  0.00,  0.0,  0.25 } };
 }
 
 void PresentTestResult(const char* str, SM_Matrix<>& Res)
@@ -111,17 +136,19 @@ bool SM_Matrix_UT()
 	bool Contruction_UT_Success = false, Assignment_UT_success = false;
 	bool Addition_UT_Success = false, Subtraction_UT_Success = false;
 	bool Multiplication_UT_Success = false, Division_UT_Success = false;
+	bool Inversion_UT_Success = false;
 
 	Contruction_UT_Success = SM_Matrix_Unittests::ConstructionTest();
 	Assignment_UT_success = SM_Matrix_Unittests::AssignmentTest();
 	Addition_UT_Success = SM_Matrix_Unittests::AdditionTest();
 	Subtraction_UT_Success = SM_Matrix_Unittests::SubtractionTest();
 	Multiplication_UT_Success = SM_Matrix_Unittests::MultiplicationTest();
+	Inversion_UT_Success = SM_Matrix_Unittests::InversionTest();
 	Division_UT_Success = SM_Matrix_Unittests::DivisionTest();
 
 	SM_Matrix_UT_Success = Contruction_UT_Success && Assignment_UT_success && 
 							Addition_UT_Success && Subtraction_UT_Success && 
-							Multiplication_UT_Success && Division_UT_Success;
+							Multiplication_UT_Success && Inversion_UT_Success && Division_UT_Success;
 
 	if (SM_Matrix_UT_Success)
 	{
@@ -961,6 +988,136 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 	std::cout << "\n";
 
 	return true;
+}
+
+bool SM_Matrix_Unittests::InversionTest()
+{
+	double ResMat_arr[4][4] = { 0.0 }, InvMat_arr[4][4] = { 0.0 }, L_arr[4][4] = { 0.0 }, U_arr[4][6] = { 0.0 };
+	SM_Matrix ResMat(4, 4, ResMat_arr), InvMat(4, 4, InvMat_arr);
+	SM_Matrix LU_Mat(4, 6, SM_Matrix_UT_variables::LU_ref);
+	SM_Matrix L_Mat(4, 4, L_arr), U_Mat(4, 6, U_arr);
+
+	int i, j;
+	double DetVal = 0;
+
+	// Header
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "------------------------------- Inversion Unittest -----------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+	// LU decompusition
+	std::cout << "Performing: LU decomposition on LU reference:\n" << LU_Mat << std::endl;
+
+	LU_Mat.LU_Decompose(L_Mat, U_Mat);
+
+	for (i = 0; i < L_Mat.Nrows; i++)
+	{
+		for (j = 0; j < L_Mat.Ncolumns; j++)
+		{
+			if (L_Mat[i][j] != SM_Matrix_UT_variables::L_ref[i][j])
+			{
+				std::cout << "LU decomposition failed (L)" << std::endl;
+				std::cout << "Result: \n" << L_Mat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < L_Mat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::L_ref[i][0];
+					for (j = 1; j < L_Mat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::L_ref[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	for (i = 0; i < U_Mat.Nrows; i++)
+	{
+		for (j = 0; j < U_Mat.Ncolumns; j++)
+		{
+			if (U_Mat[i][j] != SM_Matrix_UT_variables::U_ref[i][j])
+			{
+				std::cout << "LU decomposition failed (U)" << std::endl;
+				std::cout << "Result: \n" << U_Mat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < U_Mat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::U_ref[i][0];
+					for (j = 1; j < U_Mat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::U_ref[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("LU decomposition succeeded\n L:", L_Mat);
+	std::cout << "U:\n" << U_Mat << std::endl;
+
+	ResMat = &SM_Matrix_UT_variables::Invertible_ref[0][0];
+
+	// Determinant
+	std::cout << "Performing: Determinant calculation on:\n" << ResMat << std::endl;
+
+	DetVal = ResMat.Det();
+
+	if (DetVal != 16.0)
+	{
+		std::cout << "Determinant calculation failed" << std::endl;
+		std::cout << "Result - " << DetVal << std::endl;
+		std::cout << "Expected value - " << 16.0 << std::endl;
+	}
+	else
+	{
+		std::cout << "Determinant calculation succeeded" << "\n" << DetVal << std::endl;
+	}
+
+	// Inversion
+	std::cout << "Performing: Matrix inversion on:\n" << ResMat << std::endl;
+
+	InvMat = ResMat.Invert();
+
+	for (i = 0; i < InvMat.Nrows; i++)
+	{
+		for (j = 0; j < InvMat.Ncolumns; j++)
+		{
+			if (InvMat[i][j] != SM_Matrix_UT_variables::Inverse_ref[i][j])
+			{
+				std::cout << "Matrix inversion" << std::endl;
+				std::cout << "Result: \n" << InvMat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < InvMat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::Inverse_ref[i][0];
+					for (j = 1; j < InvMat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::Inverse_ref[i][j];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("Matrix inversion succeeded", InvMat);
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "\n";
+
+	return false;
 }
 
 bool SM_Matrix_Unittests::DivisionTest()

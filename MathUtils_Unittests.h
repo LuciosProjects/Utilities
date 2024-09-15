@@ -9,6 +9,8 @@ namespace SM_Matrix_Unittests
 	bool AdditionTest();
 	bool SubtractionTest();
 	bool MultiplicationTest();
+
+	bool InversionTest();
 	bool DivisionTest();
 
 	// assignment unittests

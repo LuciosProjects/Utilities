@@ -10,7 +10,7 @@
 
 /* SM_Matrix global definitions */
 #define _MATRIX_MAX_DIM 50
-#define _SM_Matrix_NumBufferCycles 3
+#define _SM_Matrix_NumBufferCycles 4
 
 template <typename Type = double, size_t N = _SM_Matrix_NumBufferCycles, size_t BufferSize = _MATRIX_MAX_DIM*_MATRIX_MAX_DIM>
 class CyclicalBuffer {
@@ -176,6 +176,10 @@ namespace Math
         bool CompareDims(const SM_Matrix& other)
         {
             return (Nrows == other.Nrows && Ncolumns == other.Ncolumns);
+        }
+        bool CheckDims(const int num_rows, const int num_cols)
+        {
+            return (num_rows == Nrows && num_cols == Ncolumns);
         }
         bool isSquare()
         {
@@ -520,20 +524,20 @@ namespace Math
             }
         }
 
-        //// Division operators
+        // Division operators
+
+        // Matrix division by scalar
+        SM_Matrix operator/(const Type& k)
+        {
+            SM_Matrix MatDiv = getResultMat(Nrows, Ncolumns);
+            for (It = 0; It < NumEl; It++) {
+                MatDiv.Mat[It] = Mat[It] / k;
+            }
+            return MatDiv;
+        }
 
         //// Matrix division by scalar
-        //SM_Matrix operator/(const Type k)
-        //{
-        //    SM_Matrix<Nrows, Ncolumns, Type> MatDiv;
-        //    for (It = 0; It < NumEl; It++) {
-        //        MatDiv.Mat[It] = Mat[It] / k;
-        //    }
-        //    return MatDiv;
-        //}
-
-        //// Matrix division by scalar
-        //void operator/=(const Type k)
+        //void operator/=(const Type& k)
         //{
         //    for (It = 0; It < NumEl; It++) {
         //        Mat[It] /= k;
@@ -716,17 +720,21 @@ namespace Math
         //    return TMat;
         //}
 
-        ///* Diagonal product */
-        //Type DiagProduct()
-        //{
-        //    Type Prod = 1;
-        //    if (isSquare()) {
-        //        for (It = 0; It < Nrows; It++) {
-        //            Prod *= this->Mat[It * Ncolumns + It];
-        //        }
-        //    }
-        //    return Prod;
-        //}
+        /* Diagonal product */
+        Type DiagProduct()
+        {
+            Type Prod = 1;
+            if (isSquare()) {
+                for (It = 0; It < Nrows; It++) {
+                    Prod *= Mat[It * Ncolumns + It];
+                }
+            }
+            else
+            {
+                Prod = (Type)0;
+            }
+            return Prod;
+        }
 
         ///* Matrix trace (sum of diagonal elements) */
         //Type Trace()
@@ -740,71 +748,78 @@ namespace Math
         //    return Sum;
         //}
 
-        ///* Minor of matrix given by (row,column) position */
-        //SM_Matrix Minor(int row, int col)
-        //{
-        //    SM_Matrix<Nrows - 1, Ncolumns - 1, Type> Minor;
-        //    int i, j, m_tracker = 0;
-        //    if (CheckBounds(row, col))
-        //    {
-        //        for (i = 0; i < Nrows; i++) {
-        //            if (i == row) { continue; }
+        /* Minor of matrix given by (row,column) position */
+        SM_Matrix Minor(int row, int col)
+        {
+            SM_Matrix Minor = getResultMat(Nrows - 1, Ncolumns - 1);
+            int i, j, m_tracker = 0;
 
-        //            for (j = 0; j < Ncolumns; j++) {
-        //                if (j == col) { continue; }
-        //                Minor.Mat[m_tracker] = Mat[i * Ncolumns + j];
-        //                m_tracker++;
-        //            }
-        //        }
-        //        return Minor;
-        //    }
-        //}
+            if (CheckBounds(row, col))
+            {
+                for (i = 0; i < Nrows; i++) {
+                    if (i == row) { continue; }
 
-        ///* Matrix determinant */
-        //Type Det()
-        //{
-        //    if (isSquare()) {
-        //        SM_Matrix<Nrows, Nrows, Type> L;
-        //        SM_Matrix U;
-        //        LU_Decompose(L, U);
+                    for (j = 0; j < Ncolumns; j++) {
+                        if (j == col) { continue; }
+                        //Minor.Mat[m_tracker] = Mat[i * Ncolumns + j];
+                        Minor.Mat[m_tracker] = Mat[_2D_to_1D_indexing(i,j)];
+                        m_tracker++;
+                    }
+                }
+                return Minor;
+            }
+        }
 
-        //        return U.DiagProduct(); // Diagonal product of L is 1
+        /* Matrix determinant */
+        Type Det()
+        {
+            if (isSquare()) {
+                SM_Matrix L = getResultMat(Nrows, Nrows);
+                SM_Matrix U = getResultMat(Nrows, Ncolumns);
+                LU_Decompose(L, U);
 
-        //    }
-        //}
+                return U.DiagProduct(); // Diagonal product of L is 1
 
-        ///* Calculates the adjugate (cofactor) matrix */
-        //SM_Matrix Adjugate()
-        //{
-        //    SM_Matrix Adj;
-        //    SM_Matrix<Nrows - 1, Ncolumns - 1, Type> _Minor;
-        //    int i, j;
-        //    Type sign;
-        //    bool ODD;
+            }
+        }
 
-        //    for (i = 0; i < Nrows; i++) {
-        //        for (j = 0; j < Ncolumns; j++) {
-        //            ODD = ((i + 1) + (j + 1)) % 2;
-        //            sign = ODD ? -1 : 1;
+        /* Calculates the adjugate (cofactor) matrix */
+        SM_Matrix Adjugate()
+        {
+            SM_Matrix Adj       = getResultMat(Nrows, Ncolumns);
+            SM_Matrix _Minor    = getResultMat(Nrows - 1, Ncolumns - 1);
 
-        //            _Minor.ValueCopy(Minor(i, j));
-        //            Adj.Mat[j * Nrows + i] = sign * _Minor.Det();
-        //        }
-        //    }
-        //    return Adj;
-        //}
+            int i, j;
+            Type sign;
+            bool ODD;
 
-        ///* Calculates the inverse of the matrix instance */
-        //SM_Matrix Invert()
-        //{
-        //    Type MatDet = Det();
+            for (i = 0; i < Nrows; i++) {
+                for (j = 0; j < Ncolumns; j++) {
+                    ODD = ((i + 1) + (j + 1)) % 2;
+                    sign = ODD ? -1 : 1;
 
-        //    //SM_Matrix MInverse;
-        //    //MInverse.ValueCopy(Adjugate());
-        //    //MInverse /= MatDet;
+                    _Minor.ValueCopy(Minor(i, j));
+                    Adj.Mat[j * Nrows + i] = sign * _Minor.Det();
+                }
+            }
+            return Adj;
+        }
 
-        //    return Adjugate() / MatDet;
-        //}
+        /* Calculates the inverse of the matrix instance */
+        SM_Matrix Invert()
+        {
+            Type MatDet = Det();
+
+            SM_Matrix AdjMat = getResultMat(Nrows, Ncolumns);
+            
+            AdjMat = Adjugate();
+            //SM_Matrix MInverse;
+            //MInverse.ValueCopy(Adjugate());
+            //MInverse /= MatDet;
+
+            //return Adjugate() / MatDet;
+            return AdjMat / MatDet;
+        }
 
         ///* Matrix QR decomposition, Q is orthogonal to A & R is upper triangular matrix */
         //void QR_Decompose(SM_Matrix& Q, SM_Matrix<Num_Columns, Num_Columns, Type>& R)
@@ -866,41 +881,46 @@ namespace Math
         //    }
         //}
 
-        ///* Decompose a square matrix A to Lower triangular & Upper triangular matrices such that A = LU */
-        //void LU_Decompose(SM_Matrix<Num_Rows, Num_Rows, Type>& L, SM_Matrix& U)
-        //{
-        //    int i, j, k;
-        //    Type Sum;
+        /* Decompose a square matrix A to Lower triangular & Upper triangular matrices such that A = LU */
+        void LU_Decompose(SM_Matrix& L, SM_Matrix& U)
+        {
+            int i, j, k;
+            Type Sum;
 
-        //    L.Zeroize();
-        //    U.Zeroize();
+            L.Zeroize();
+            U.Zeroize();
 
-        //    for (i = 0; i < Nrows; i++) {
+            if (!L.CheckDims(Nrows, Nrows) || !U.CheckDims(Nrows, Ncolumns))
+            {
+                return;
+            }
 
-        //        /* Upper triangular matrix */
-        //        for (j = i; j < Ncolumns; j++) {
-        //            Sum = 0;
-        //            for (k = 0; k < i; k++) {
-        //                Sum += L.Mat[i * Nrows + k] * U.Mat[k * Ncolumns + j];
-        //            }
-        //            U.Mat[i * Ncolumns + j] = Mat[i * Ncolumns + j] - Sum;
-        //        }
+            for (i = 0; i < Nrows; i++) {
 
-        //        /* Lower triangular matrix */
-        //        for (j = i; j < Nrows; j++) {
-        //            if (i == j) {
-        //                L.Mat[i * Nrows + j] = 1;
-        //            }
-        //            else {
-        //                Sum = 0;
-        //                for (k = 0; k < i; k++) {
-        //                    Sum += L.Mat[j * Nrows + k] * U.Mat[k * Ncolumns + i];
-        //                }
-        //                L.Mat[j * Nrows + i] = _MATRIX_DIVPROTECT(Mat[j * Ncolumns + i] - Sum, U.Mat[i * Ncolumns + i]);
-        //            }
-        //        }
-        //    }
-        //}
+                /* Upper triangular matrix */
+                for (j = i; j < Ncolumns; j++) {
+                    Sum = 0;
+                    for (k = 0; k < i; k++) {
+                        Sum += L.Mat[i * Nrows + k] * U.Mat[k * Ncolumns + j];
+                    }
+                    U.Mat[i * Ncolumns + j] = Mat[i * Ncolumns + j] - Sum;
+                }
+
+                /* Lower triangular matrix */
+                for (j = i; j < Nrows; j++) {
+                    if (i == j) {
+                        L.Mat[i * Nrows + j] = 1;
+                    }
+                    else {
+                        Sum = 0;
+                        for (k = 0; k < i; k++) {
+                            Sum += L.Mat[j * Nrows + k] * U.Mat[k * Ncolumns + i];
+                        }
+                        L.Mat[j * Nrows + i] = _MATRIX_DIVPROTECT(Mat[j * Ncolumns + i] - Sum, U.Mat[i * Ncolumns + i]);
+                    }
+                }
+            }
+        }
     };
 }
 
