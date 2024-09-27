@@ -7,6 +7,7 @@
 #include <iostream>
 
 /* SM_Matrix global definitions */
+#define _SM_MATRIX_VERSION  "1.0.0"
 #define _NUM_THREADS_4_SM_MATRIX_CYCLICALBUFFER 1
 #define _MATRIX_MAX_DIM 30
 #define _MATRIX_MAX_SIZE  (_MATRIX_MAX_DIM * _MATRIX_MAX_DIM)
