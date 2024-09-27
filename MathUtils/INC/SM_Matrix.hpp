@@ -2,15 +2,18 @@
 #define _SM_MATRIX_H
 
 #include <array>
-#include <stdexcept>
+#include <thread>
+#include <mutex>
 #include <iostream>
+
+/* SM_Matrix global definitions */
+#define _NUM_THREADS_4_SM_MATRIX_CYCLICALBUFFER 1
+#define _MATRIX_MAX_DIM 30
+#define _MATRIX_MAX_SIZE  (_MATRIX_MAX_DIM * _MATRIX_MAX_DIM)
+#define _SM_Matrix_NumBufferCycles (5*_NUM_THREADS_4_SM_MATRIX_CYCLICALBUFFER)
 
 /* SM_Matrix helper macros */
 #define _MATRIX_DIVPROTECT(num,den) (abs(den) < 1e-8) ? num : (num/den)
-
-/* SM_Matrix global definitions */
-#define _MATRIX_MAX_DIM 50
-#define _SM_Matrix_NumBufferCycles 4
 
 template <typename Type = double, size_t N = _SM_Matrix_NumBufferCycles, size_t BufferSize = _MATRIX_MAX_DIM*_MATRIX_MAX_DIM>
 class CyclicalBuffer {
@@ -43,30 +46,31 @@ public:
         Type* buffer;
     };
 
-    CyclicalBuffer() {
-        int i;
+    // Delete the copy constructor and assignment operator to prevent copying
+    CyclicalBuffer(const CyclicalBuffer&) = delete;
+    CyclicalBuffer& operator=(const CyclicalBuffer&) = delete;
 
-        currentIndex = 0;
-        bufferOccupied.fill(false);  // Mark all buffers as free initially
-
-        // All buffers are initialized with zeros
-        for (i = 0; i < N; i++) 
-        {
-            buffers[i].fill((Type)0);
-        }
+    static CyclicalBuffer& getInstance()
+    {
+        static CyclicalBuffer instance; // Guaranteed to be destroyed and instantiated only once
+        return instance;
     }
+
 
     // Get the current available buffer
     BufferHandle getNextBuffer() {
+        std::lock_guard<std::mutex> lock(mtx);
+
         int i, bufferIndex;
         for (i = 0; i < N; i++) {
             bufferIndex = (currentIndex + i) % N;
-            if (!bufferOccupied[bufferIndex]) {
-                bufferOccupied[bufferIndex] = true;
-                currentIndex = (bufferIndex + 1) % N;
-                return BufferHandle(this, buffers[bufferIndex].data());
+            if (!bufferOccupied[bufferIndex]) { // Found an un-occupied buffer
+                bufferOccupied[bufferIndex] = true; // Set the un-occupied buffer as occupied
+                currentIndex = (bufferIndex + 1) % N; // Update currentIndex
+                return BufferHandle(this, buffers[bufferIndex].data()); // Construct a BufferHandle object
             }
         }
+        // Error is thrown when a buffer is required but no free buffer is available at the moment
         throw std::runtime_error("No free buffers available.");
     }
 
@@ -85,9 +89,23 @@ private:
     std::array<std::array<Type, BufferSize>, N> buffers;    // A fixed number of buffers
     std::array<bool, N> bufferOccupied;                     // Keeps track of occupied buffers
     size_t currentIndex;                                    // Tracks the next available buffer in the cycle
+    std::mutex mtx;
+
+    CyclicalBuffer() : currentIndex(0)
+    {
+        int i;
+
+        bufferOccupied.fill(false);  // Mark all buffers as free initially
+
+        // All buffers are initialized with zeros
+        for (i = 0; i < N; i++)
+        {
+            buffers[i].fill((Type)0);
+        }
+    }
 };
 
-static CyclicalBuffer<> SM_Matrix_BufferManager;
+//static CyclicalBuffer<> SM_Matrix_BufferManager;
 
 template<class Type>
 class SM_RowProxy {
@@ -129,22 +147,10 @@ namespace Math
         /************************************************************************/
         int	        It = 0; /* Iterator member */
         SM_RowProxy<Type>  Prxy;
-        //Type Buffer[Num_Rows * Num_Columns] = { (Type)0 }; // Buffer member to serve as intermediate memory for matrix operations
 
         /************************************************************************/
-        /************************ Utility private methods ************************/
+        /************************ Utility private methods ***********************/
         /************************************************************************/
-
-        SM_Matrix getResultMat(const int row, const int col)
-        {
-            auto resultBufferHandle = SM_Matrix_BufferManager.getNextBuffer();
-
-            SM_Matrix ResMat(row, col, resultBufferHandle.getBuffer());
-
-            ResMat.Zeroize();
-
-            return ResMat;
-        }
 
         /* Copies elements to matrix from a given SM_Matrix object input */
         SM_Matrix ValueCopy(const SM_Matrix& other)
@@ -164,56 +170,56 @@ namespace Math
         }
 
         // Converts 2 dimensional indices to 1 dimensional
-        int _2D_to_1D_indexing(int i, int j)
+        int _2D_to_1D_indexing(int i, int j) const
         {
             return (i * Ncolumns + j);
         }
 
-        bool CheckBounds(int row, int col)
+        bool CheckBounds(int row, int col) const
         {
             return (row >= 0 && row < Nrows && col >= 0 && col < Ncolumns);
         }
-        bool CompareDims(const SM_Matrix& other)
+        bool CompareDims(const SM_Matrix& other) const
         {
             return (Nrows == other.Nrows && Ncolumns == other.Ncolumns);
         }
-        bool CheckDims(const int num_rows, const int num_cols)
+        bool CheckDims(const int num_rows, const int num_cols) const
         {
             return (num_rows == Nrows && num_cols == Ncolumns);
         }
-        bool isSquare()
+        bool isSquare() const
         {
             return (Nrows == Ncolumns);
         }
 
-        //Type RowNorm(int row)
-        //{
-        //    int j;
-        //    Type Norm = 0;
-        //    for (j = 0; j < Ncolumns; j++) {
-        //        Norm += Mat[row * Ncolumns + j] * Mat[row * Ncolumns + j];
-        //    }
+        Type RowNorm(int row)
+        {
+            int j, _1D_idx;
+            Type Norm = 0;
+            for (j = 0; j < Ncolumns; j++) {
+                _1D_idx = _2D_to_1D_indexing(row, j);
+                Norm += Mat[_1D_idx] * Mat[_1D_idx];
+            }
+            
+            return sqrt(Norm);
+        }
 
-        //    return sqrt(Norm);
-        //}
-
-        //Type ColNorm(int col)
-        //{
-        //    int i;
-        //    Type Norm = 0;
-        //    for (i = 0; i < Nrows; i++) {
-        //        Norm += Mat[i * Ncolumns + col] * Mat[i * Ncolumns + col];
-        //    }
-        //    return sqrt(Norm);
-        //}
+        Type ColNorm(int col)
+        {
+            int i, _1D_idx;
+            Type Norm = 0;
+            for (i = 0; i < Nrows; i++) {
+                _1D_idx = _2D_to_1D_indexing(i, col);
+                Norm += Mat[_1D_idx] * Mat[_1D_idx];
+            }
+            return sqrt(Norm);
+        }
 
     public:
         /************************************************************************/
         /**************************** Public members ****************************/
         /************************************************************************/
         Type* Mat;
-
-        //Type* Mat;
         int	Nrows, Ncolumns, NumEl;
 
         /************************************************************************/
@@ -223,6 +229,12 @@ namespace Math
         /* Regular pointer constructor */
         SM_Matrix(size_t Num_Rows, size_t Num_Columns, Type* ref) : Nrows(Num_Rows), Ncolumns(Num_Columns), NumEl(Num_Rows* Num_Columns)
         {
+            if (Num_Rows * Num_Columns > _MATRIX_MAX_SIZE)
+            {
+                std::cerr << "Matrix number of elements must not exceed " << _MATRIX_MAX_SIZE << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+
             Mat = ref;
         }
 
@@ -230,6 +242,12 @@ namespace Math
         template<size_t N>
         SM_Matrix(size_t Num_Rows, size_t Num_Columns, Type (*ref)[N]) : Nrows(Num_Rows), Ncolumns(Num_Columns), NumEl(Num_Rows* Num_Columns)
         {
+            if (Num_Rows * Num_Columns > _MATRIX_MAX_SIZE)
+            {
+                std::cerr << "Matrix number of elements must not exceed " << _MATRIX_MAX_SIZE << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+
             Mat = &ref[0][0];
         }
 
@@ -289,33 +307,20 @@ namespace Math
             ValueCopy(other);
         }
 
-        ///* 1D Array pointer copy to matrix operator (copy by value) */
-        //void operator=(const Type other[])
-        //{
-        //    int i, j, _1D_idx;
-        //    for (i = 0; i < Nrows; i++) {
-        //        for (j = 0; j < Ncolumns; j++) {
-        //            _1D_idx = _2D_to_1D_indexing(i, j);
-        //            Mat[_1D_idx] = other[_1D_idx];
-        //        }
-        //    }
-        //    //return *this;
-        //}
-
-        /* 1D & 2D Array pointer copy to matrix operator (copy by value) */
+        /* 1D Array pointer copy to matrix operator (copy by value) */
         void operator=(const Type* other)
         {
-            int i, j, _1D_idx;
-            for (i = 0; i < Nrows; i++) {
-                for (j = 0; j < Ncolumns; j++) {
-                    _1D_idx = _2D_to_1D_indexing(i, j);
-                    Mat[_1D_idx] = other[_1D_idx];
-                }
-            }
-            //return *this;
+            //int i, j, _1D_idx;
+            //for (i = 0; i < Nrows; i++) {
+            //    for (j = 0; j < Ncolumns; j++) {
+            //        _1D_idx = _2D_to_1D_indexing(i, j);
+            //        Mat[_1D_idx] = other[_1D_idx];
+            //    }
+            //}
+            ValueCopy(other);
         }
 
-        /* Scalar assignment */
+        /* Scalar assignment (applies to all elements) */
         void operator=(const Type& k)
         {
             for (It = 0; It < NumEl; It++) {
@@ -358,7 +363,8 @@ namespace Math
         {
             if (CompareDims(other))
             {
-                SM_Matrix MatSum = getResultMat(Nrows, Ncolumns);
+                CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                SM_Matrix MatSum(Nrows, Ncolumns, BufferHandle.getBuffer());
 
                 for (It = 0; It < NumEl; It++)
                 {
@@ -372,7 +378,8 @@ namespace Math
         // Addition by scalar (constant matrix of the same size, where Mat[i] = k)
         SM_Matrix operator+(const Type& k)
         {
-            SM_Matrix MatSum = getResultMat(Nrows, Ncolumns);
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix MatSum(Nrows, Ncolumns, BufferHandle.getBuffer());
 
             for (It = 0; It < NumEl; It++)
             {
@@ -383,7 +390,7 @@ namespace Math
         }
 
         // Addition assignment operator
-        SM_Matrix operator+=(const SM_Matrix& other)
+        void operator+=(const SM_Matrix& other)
         {
             if (CompareDims(other))
             {
@@ -391,7 +398,6 @@ namespace Math
                 {
                     Mat[It] += other.Mat[It];
                 }
-                return *this;
             }
         }
 
@@ -411,7 +417,9 @@ namespace Math
         {
             if (CompareDims(other))
             {
-                SM_Matrix MatSub = getResultMat(Nrows, Ncolumns);
+                CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                SM_Matrix MatSub(Nrows, Ncolumns, BufferHandle.getBuffer());
+
                 for (It = 0; It < NumEl; It++)
                 {
                     MatSub.Mat[It] = Mat[It] - other.Mat[It];
@@ -424,7 +432,9 @@ namespace Math
         // Subtraction by scalar (constant matrix of the same size, where Mat[i] = k)
         SM_Matrix operator-(const Type k)
         {
-            SM_Matrix MatSub = getResultMat(Nrows, Ncolumns);
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix MatSub(Nrows, Ncolumns, BufferHandle.getBuffer());
+
             for (It = 0; It < NumEl; It++)
             {
                 MatSub.Mat[It] = Mat[It] - k;
@@ -436,7 +446,9 @@ namespace Math
         // Self negation operator
         SM_Matrix operator-()
         {
-            SM_Matrix Neg = getResultMat(Nrows, Ncolumns);
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix Neg(Nrows, Ncolumns, BufferHandle.getBuffer());
+
             for (It = 0; It < NumEl; It++)
             {
                 Neg.Mat[It] = -Mat[It];
@@ -474,18 +486,38 @@ namespace Math
             if (Ncolumns == other.Nrows)
             {
                 int i, j, k;
-                SM_Matrix MatMul = getResultMat(Nrows, other.Ncolumns);
-                
+                CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                SM_Matrix MatMul(Nrows, other.Ncolumns, BufferHandle.getBuffer());
+
+                MatMul.Zeroize();
+
                 for (i = 0; i < Nrows; i++) {
                     for (j = 0; j < other.Ncolumns; j++) {
                         for (k = 0; k < Ncolumns; k++) {
-                            MatMul.Mat[i * other.Ncolumns + j] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[k * other.Ncolumns + j];
+                            MatMul.Mat[other._2D_to_1D_indexing(i, j)] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[other._2D_to_1D_indexing(k, j)];
                         }
                     }
                 }
                 return MatMul;
             }
         }
+
+        // Matrix multiplication by vector
+        
+        void MatxVec(Type VecIn[], Type VecOut[])
+        {
+            int i, j;
+
+            for (i = 0; i < Nrows; i++)
+            {
+                VecOut[i] = (Type)0;
+                for (j = 0; j < Ncolumns; j++)
+                {
+                    VecOut[i] += Mat[_2D_to_1D_indexing(i, j)] * VecIn[j];
+                }
+            }
+        }
+
 
         // Matrix multiplication by scalar k
         SM_Matrix operator*(const Type& k)
@@ -501,14 +533,18 @@ namespace Math
         {
             if (isSquare())
             {
-                SM_Matrix MatMul = getResultMat(Nrows, Ncolumns);
                 int i, j, k;
+
+                CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                SM_Matrix MatMul(Nrows, other.Ncolumns, BufferHandle.getBuffer());
+
+                MatMul.Zeroize();
 
                 for (i = 0; i < Nrows; i++) {
                     for (j = 0; j < other.Ncolumns; j++) {
-                        //MatMul.Mat[i * other.Ncolumns + j] = 0;
                         for (k = 0; k < Ncolumns; k++) {
-                            MatMul.Mat[i * other.Ncolumns + j] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[k * other.Ncolumns + j];
+                            //MatMul.Mat[i * other.Ncolumns + j] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[k * other.Ncolumns + j];
+                            MatMul.Mat[other._2D_to_1D_indexing(i, j)] += Mat[_2D_to_1D_indexing(i, k)] * other.Mat[other._2D_to_1D_indexing(k, j)];
                         }
                     }
                 }
@@ -529,56 +565,102 @@ namespace Math
         // Matrix division by scalar
         SM_Matrix operator/(const Type& k)
         {
-            SM_Matrix MatDiv = getResultMat(Nrows, Ncolumns);
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix MatDiv(Nrows, Ncolumns, BufferHandle.getBuffer());
+
             for (It = 0; It < NumEl; It++) {
                 MatDiv.Mat[It] = Mat[It] / k;
             }
             return MatDiv;
         }
 
-        //// Matrix division by scalar
-        //void operator/=(const Type& k)
-        //{
-        //    for (It = 0; It < NumEl; It++) {
-        //        Mat[It] /= k;
-        //    }
-        //}
+        // Matrix division assignment by scalar
+        void operator/=(const Type& k)
+        {
+            for (It = 0; It < NumEl; It++) {
+                Mat[It] /= k;
+            }
+        }
 
-        //// multiplying by inverse of other
-        //SM_Matrix operator/(const SM_Matrix& other)
-        //{
-        //    return *this * other.Invert();
-        //}
+        // multiplying by inverse of other
+        SM_Matrix operator/(const SM_Matrix& other)
+        {
+            return *this * other.Invert();
+        }
 
-        //// Matrix exponentiation (takes only integer exponents)
-        //SM_Matrix operator^(const signed int& exponent)
-        //{
-        //    if (isSquare())
-        //    {
-        //        if (abs(exponent) == 0)
-        //        {
-        //            return Identity();
-        //        }
-        //        else if (exponent > 0)
-        //        {
-        //            SM_Matrix<Nrows, Ncolumns, Type> Result;
-        //            Result.ValueCopy(this);
+        // Matrix division assignment by matrix (multiply assign with inverse)
+        void operator/=(const SM_Matrix& other)
+        {
+            *this *= other.Invert();
+        }
 
-        //            for (It = 1; It < exponent; It++) {
-        //                Result *= *this;
-        //            }
-        //            return Result;
-        //        }
-        //        else
-        //        {
-        //            SM_Matrix<Nrows, Ncolumns, Type> Result;
-        //            Result.ValueCopy(this->Invert());
-        //            Result = Result ^ (-exponent);
+        // Matrix exponentiation (takes only integer exponents)
+        SM_Matrix operator^(const int& exponent)
+        {
+            if (isSquare())
+            {
+                if (abs(exponent) == 0) // 0 exponent
+                {
+                    Identity();
+                    return *this;
+                }
+                else if (exponent > 0) // Positive exponent
+                {
+                    CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                    SM_Matrix Result(Nrows, Ncolumns, BufferHandle.getBuffer());
 
-        //            return Result;
-        //        }
-        //    }
-        //}
+                    Result = *this; // Copy by value
+
+                    for (It = 1; It < exponent; It++) {
+                        Result *= *this;
+                    }
+                    return Result;
+                }
+                else // Negative exponent
+                {
+                    CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                    SM_Matrix Result(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+                    Result = Invert();
+                    Result = Result ^ (-exponent);
+
+                    return Result;
+                }
+            }
+        }
+
+        void operator^=(const int& exponent)
+        {
+            if (isSquare())
+            {
+                if (abs(exponent) == 0) // 0 exponent
+                {
+                    Identity();
+                }
+                else if (exponent > 0) // Positive exponent
+                {
+                    CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                    SM_Matrix Result(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+                    Result = *this; // Copy by value
+
+                    for (It = 1; It < exponent; It++) {
+                        Result *= *this;
+                    }
+                    *this = Result;
+                }
+                else // Negative exponent
+                {
+                    CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+                    SM_Matrix Result(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+                    Result = Invert();
+                    Result = Result ^ (-exponent);
+
+                    *this = Result;
+                }
+            }
+        }
 
         ///************************************************************************/
         ///************************ Utility public methods ************************/
@@ -606,58 +688,97 @@ namespace Math
             }
         }
 
-        ///* Application of a single argument function to the object */
-        //SM_Matrix ApplyEach(Type(*func)(Type))
-        //{
-        //    SM_Matrix res;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        res.Mat[It] = func(Mat[It]);
-        //    }
-        //    return res;
-        //}
-        //SM_Matrix ApplyEach(Type(*func)(Type&))
-        //{
-        //    SM_Matrix res;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Mat[It] = func(Mat[It]);
-        //    }
-        //    return res;
-        //}
-        //SM_Matrix ApplyEach(Type(*func)(Type, Type), Type& SecondArg)
-        //{
-        //    SM_Matrix res;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Mat[It] = func(Mat[It], SecondArg);
-        //    }
-        //    return res;
-        //}
-        //SM_Matrix ApplyEach(Type(*func)(Type&, Type&), Type& SecondArg)
-        //{
-        //    SM_Matrix res;
-        //    for (It = 0; It < NumEl; It++)
-        //    {
-        //        Mat[It] = func(Mat[It], SecondArg);
-        //    }
-        //    return res;
-        //}
+        /* Application of a single argument function to the object */
+        SM_Matrix ApplyEach(Type(*func)(Type))
+        {
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
 
-        ///* Element-wise multiplication */
-        //SM_Matrix EMultiply(const SM_Matrix& other)
-        //{
-        //    SM_Matrix res;
-        //    if (NumEl == other.NumEl)
-        //    {
-        //        for (It = 0; It < NumEl; It++)
-        //        {
-        //            res.Mat[It] = Mat[It] * other.Mat[It];
-        //        }
+            for (It = 0; It < NumEl; It++)
+            {
+                res.Mat[It] = func(Mat[It]);
+            }
+            return res;
+        }
+        SM_Matrix ApplyEach(Type(*func)(Type&))
+        {
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
 
-        //        return res;
-        //    }
-        //}
+            for (It = 0; It < NumEl; It++)
+            {
+                res.Mat[It] = func(Mat[It]);
+            }
+            return res;
+        }
+
+        /* Application of a double argument function to the object */
+        SM_Matrix ApplyEach(Type(*func)(Type, Type), Type SecondArg)
+        {
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+            for (It = 0; It < NumEl; It++)
+            {
+                res.Mat[It] = func(Mat[It], SecondArg);
+            }
+            return res;
+        }
+        SM_Matrix ApplyEach(Type(*func)(Type&, Type&), Type& SecondArg)
+        {
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+            for (It = 0; It < NumEl; It++)
+            {
+                res.Mat[It] = func(Mat[It], SecondArg);
+            }
+            return res;
+        }
+
+       /* Element-wise multiplication */
+       SM_Matrix EMultiply(const SM_Matrix& other)
+       {
+           CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+           SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+           if (NumEl == other.NumEl)
+           {
+               for (It = 0; It < NumEl; It++)
+               {
+                   res.Mat[It] = Mat[It] * other.Mat[It];
+               }
+
+               return res;
+           }
+           else
+           {
+               res.Zeroize();
+               return res;
+           }
+       }
+
+       /* Element-wise division */
+       SM_Matrix EDivide(const SM_Matrix& other)
+       {
+           CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+           SM_Matrix res(Nrows, Ncolumns, BufferHandle.getBuffer());
+
+           if (NumEl == other.NumEl)
+           {
+               for (It = 0; It < NumEl; It++)
+               {
+                   res.Mat[It] = _MATRIX_DIVPROTECT(Mat[It],other.Mat[It]);
+               }
+
+               return res;
+           }
+           else
+           {
+               res.Zeroize();
+               return res;
+           }
+       }
 
         ///* Multiply instance with vector-like object (make sure the multiplications is mathematically legal!). */
         ///* as input & output, put the addresses of the first elements in the Vin/Vout data structures. */
@@ -706,19 +827,21 @@ namespace Math
         //    return *this;
         //}
 
-        ///* Transpose matrix */
-        //SM_Matrix Transpose()
-        //{
-        //    int i, j;
-        //    SM_Matrix TMat;
+        /* Transpose matrix */
+        SM_Matrix Transpose()
+        {
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix TMat(Ncolumns, Nrows, BufferHandle.getBuffer());
+            
+            int i, j;
 
-        //    for (i = 0; i < Nrows; i++) {
-        //        for (j = 0; j < Ncolumns; j++) {
-        //            TMat.Mat[j * Nrows + i] = Mat[i * Ncolumns + j];
-        //        }
-        //    }
-        //    return TMat;
-        //}
+            for (i = 0; i < Nrows; i++) {
+                for (j = 0; j < Ncolumns; j++) {
+                    TMat.Mat[j * Nrows + i] = Mat[_2D_to_1D_indexing(i,j)];
+                }
+            }
+            return TMat;
+        }
 
         /* Diagonal product */
         Type DiagProduct()
@@ -736,22 +859,24 @@ namespace Math
             return Prod;
         }
 
-        ///* Matrix trace (sum of diagonal elements) */
-        //Type Trace()
-        //{
-        //    Type Sum = 0;
-        //    if (isSquare()) {
-        //        for (It = 0; It < Nrows; It++) {
-        //            Sum += this->Mat[It * Ncolumns + It];
-        //        }
-        //    }
-        //    return Sum;
-        //}
+        /* Matrix trace (sum of diagonal elements) */
+        Type Trace()
+        {
+            Type Sum = 0;
+            if (isSquare()) {
+                for (It = 0; It < Nrows; It++) {
+                    Sum += Mat[_2D_to_1D_indexing(It,It)];
+                }
+            }
+            return Sum;
+        }
 
         /* Minor of matrix given by (row,column) position */
-        SM_Matrix Minor(int row, int col)
+        SM_Matrix Minor(int row, int col) const
         {
-            SM_Matrix Minor = getResultMat(Nrows - 1, Ncolumns - 1);
+            auto BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix Minor(Nrows - 1, Ncolumns - 1, BufferHandle.getBuffer());
+
             int i, j, m_tracker = 0;
 
             if (CheckBounds(row, col))
@@ -761,33 +886,41 @@ namespace Math
 
                     for (j = 0; j < Ncolumns; j++) {
                         if (j == col) { continue; }
-                        //Minor.Mat[m_tracker] = Mat[i * Ncolumns + j];
                         Minor.Mat[m_tracker] = Mat[_2D_to_1D_indexing(i,j)];
                         m_tracker++;
                     }
                 }
-                return Minor;
             }
+            else
+            {
+                Minor.Zeroize();
+            }
+
+            return Minor;
         }
 
         /* Matrix determinant */
-        Type Det()
+        Type Det() const
         {
             if (isSquare()) {
-                SM_Matrix L = getResultMat(Nrows, Nrows);
-                SM_Matrix U = getResultMat(Nrows, Ncolumns);
+
+                CyclicalBuffer<>::BufferHandle BufferHandle1 = CyclicalBuffer<>::getInstance().getNextBuffer();
+                CyclicalBuffer<>::BufferHandle BufferHandle2 = CyclicalBuffer<>::getInstance().getNextBuffer();
+                SM_Matrix L(Nrows, Nrows, BufferHandle1.getBuffer()), U(Nrows, Ncolumns, BufferHandle2.getBuffer());
+
                 LU_Decompose(L, U);
 
                 return U.DiagProduct(); // Diagonal product of L is 1
-
             }
+            else
+                return (Type)0;
         }
 
         /* Calculates the adjugate (cofactor) matrix */
-        SM_Matrix Adjugate()
+        SM_Matrix Adjugate() const
         {
-            SM_Matrix Adj       = getResultMat(Nrows, Ncolumns);
-            SM_Matrix _Minor    = getResultMat(Nrows - 1, Ncolumns - 1);
+            CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+            SM_Matrix Adj(Nrows, Ncolumns, BufferHandle.getBuffer());
 
             int i, j;
             Type sign;
@@ -798,37 +931,36 @@ namespace Math
                     ODD = ((i + 1) + (j + 1)) % 2;
                     sign = ODD ? -1 : 1;
 
-                    _Minor.ValueCopy(Minor(i, j));
-                    Adj.Mat[j * Nrows + i] = sign * _Minor.Det();
+                    Adj.Mat[j * Nrows + i] = sign * Minor(i,j).Det();
                 }
             }
             return Adj;
         }
 
         /* Calculates the inverse of the matrix instance */
-        SM_Matrix Invert()
+        SM_Matrix Invert() const
         {
             Type MatDet = Det();
 
-            SM_Matrix AdjMat = getResultMat(Nrows, Ncolumns);
-            
-            AdjMat = Adjugate();
-            //SM_Matrix MInverse;
-            //MInverse.ValueCopy(Adjugate());
-            //MInverse /= MatDet;
-
-            //return Adjugate() / MatDet;
-            return AdjMat / MatDet;
+            return (Adjugate() / MatDet);
         }
 
         ///* Matrix QR decomposition, Q is orthogonal to A & R is upper triangular matrix */
-        //void QR_Decompose(SM_Matrix& Q, SM_Matrix<Num_Columns, Num_Columns, Type>& R)
+        //void QR_Decompose(SM_Matrix& Q, SM_Matrix& R)
         //{
-        //    SM_Matrix<Nrows, 1, Type> CurrentA;
-        //    SM_Matrix U(this);
+        //    CyclicalBuffer<>::BufferHandle BufferHandle = CyclicalBuffer<>::getInstance().getNextBuffer();
+        //    CyclicalBuffer<>::BufferHandle BufferHandle2 = CyclicalBuffer<>::getInstance().getNextBuffer();
+        //    SM_Matrix CurrentA(Nrows, 1, BufferHandle.getBuffer());
+        //    SM_Matrix CurrentA(Nrows, Ncolumns, BufferHandle2.getBuffer());
+        // 
         //    Type Norm;
         //    int row, row_inloop, col;
-
+        //
+        //    if (!Q.CheckDims(Nrows, Ncolumns) || !R.CheckDims(Ncolumns, Ncolumns))
+        //    {
+        //        return;
+        //    }
+        //
         //    if (Nrows >= Ncolumns)
         //    {
         //        R.Zeroize();
@@ -882,7 +1014,7 @@ namespace Math
         //}
 
         /* Decompose a square matrix A to Lower triangular & Upper triangular matrices such that A = LU */
-        void LU_Decompose(SM_Matrix& L, SM_Matrix& U)
+        void LU_Decompose(SM_Matrix& L, SM_Matrix& U) const
         {
             int i, j, k;
             Type Sum;
@@ -901,9 +1033,10 @@ namespace Math
                 for (j = i; j < Ncolumns; j++) {
                     Sum = 0;
                     for (k = 0; k < i; k++) {
-                        Sum += L.Mat[i * Nrows + k] * U.Mat[k * Ncolumns + j];
+                        //Sum += L.Mat[i * Nrows + k] * U.Mat[k * Ncolumns + j];
+                        Sum += L.Mat[i * Nrows + k] * U.Mat[_2D_to_1D_indexing(k, j)];
                     }
-                    U.Mat[i * Ncolumns + j] = Mat[i * Ncolumns + j] - Sum;
+                    U.Mat[_2D_to_1D_indexing(i, j)] = Mat[_2D_to_1D_indexing(i, j)] - Sum;
                 }
 
                 /* Lower triangular matrix */
@@ -914,9 +1047,9 @@ namespace Math
                     else {
                         Sum = 0;
                         for (k = 0; k < i; k++) {
-                            Sum += L.Mat[j * Nrows + k] * U.Mat[k * Ncolumns + i];
+                            Sum += L.Mat[j * Nrows + k] * U.Mat[_2D_to_1D_indexing(k, i)];
                         }
-                        L.Mat[j * Nrows + i] = _MATRIX_DIVPROTECT(Mat[j * Ncolumns + i] - Sum, U.Mat[i * Ncolumns + i]);
+                        L.Mat[j * Nrows + i] = _MATRIX_DIVPROTECT(Mat[_2D_to_1D_indexing(j, i)] - Sum, U.Mat[_2D_to_1D_indexing(i, i)]);
                     }
                 }
             }

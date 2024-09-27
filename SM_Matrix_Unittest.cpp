@@ -87,7 +87,7 @@ namespace SM_Matrix_UT_variables
 											{ 3.0, 6.0,  9.0, 12.0 },
 											{ 4.0, 8.0, 12.0, 16.0 } };
 
-	double Multiplication_ref3[4][4] = {	{ 2.0, 3.0,  4.0,  5.0 },
+	double Multiplication_ref_3[4][4] = {	{ 2.0, 3.0,  4.0,  5.0 },
 											{ 3.0, 5.0,  7.0,  9.0 },
 											{ 4.0, 7.0, 10.0, 13.0 },
 											{ 5.0, 9.0, 13.0, 17.0 } };
@@ -99,6 +99,9 @@ namespace SM_Matrix_UT_variables
 
 	double Multiple_Multiplication_ref = { 0.0 };
 
+	double MatxVec_ref[3] = { 6.0, 6.0, 6.0 };
+
+	// LU decomposition
 	double LU_ref[4][6] = { { 1.0, 2.0,  3.0,  4.0,  5.0,  6.0 },
 							{ 2.0, 4.0,  6.0,  8.0, 10.0, 12.0 },
 							{ 3.0, 6.0,  9.0, 12.0, 15.0, 18.0 },
@@ -114,15 +117,53 @@ namespace SM_Matrix_UT_variables
 							{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }, 
 							{ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } };
 
+	// Inversion
 	double Invertible_ref[4][4] = {	{ 1.0, 0.0, 0.0, 0.0 },
 									{ 2.0, 4.0, 0.0, 0.0 },
 									{ 0.0, 2.0, 4.0, 0.0 },
 									{ 0.0, 0.0, 2.0, 1.0 } };
 
-	double Inverse_ref[4][4] = {{ 1.0, -0.50,  1.0, -0.50 }, 
-								{ 0.0,  0.25, -0.5,  0.25 },
-								{ 0.0,  0.00,  1.0, -0.50 },
-								{ 0.0,  0.00,  0.0,  0.25 } };
+	double Inverse_ref[4][4] = {{  1.000,  0.000,  0.000,  0.000 }, 
+								{ -0.500,  0.250,  0.000,  0.000 },
+								{  0.250, -0.125,  0.250,  0.000 },
+								{ -0.500,  0.250, -0.500,  1.000 } };
+
+	double EYE4_ref[4][4] = {	{ 1.0, 0.0, 0.0, 0.0 },
+								{ 0.0, 1.0, 0.0, 0.0 }, 
+								{ 0.0, 0.0, 1.0, 0.0 }, 
+								{ 0.0, 0.0, 0.0, 1.0 } };
+
+	double EYE3x2[3][3] = { { 2.0, 0.0, 0.0 },
+							{ 0.0, 2.0, 0.0 },
+							{ 0.0, 0.0, 2.0 } };
+	double EYE3x16[3][3] = {{ 16.0,  0.0,  0.0 },
+							{  0.0, 16.0,  0.0 },
+							{  0.0,  0.0, 16.0 } };
+	double NegExp3[3][3] = {{ 0.0625, 0.0,   0.0		},
+							{ 0.0,	  0.0625, 0.0		},
+							{ 0.0,    0.0,	  0.0625	} };
+	
+	// Misc
+	double EMult_operand[3][3] = {	{ 1.0, 2.0, 3.0 },
+									{ 4.0, 5.0, 6.0 }, 
+									{ 7.0, 8.0, 9.0 } };
+	double EMult_ref[3][3] = {	{  1.0,  4.0,  9.0 },
+								{ 16.0, 25.0, 36.0 },
+								{ 49.0, 64.0, 81.0 } };
+
+	// ApplyEach
+	double ApplyEach_Input[3][3] = {{ Math::PI / 6.0,	0.0,			0.0 },
+									{ 0.0,				Math::PI / 2.0,	0.0 },
+									{ 0.0,				0.0,			Math::PI } };
+
+	double ApplyEach_ref[3][3] = {	{	0.5,	0.0,	0.0 },
+									{	0.0,	1.0,	0.0 },
+									{	0.0,	0.0,	0.0 } };
+
+	double ApplyEach_2ndarg_ref[3][3] = {	{ 1.0,	1.0,			1.0 },
+											{ 1.0,	Math::PI / 2.0,	1.0 },
+											{ 1.0,	1.0,			Math::PI } };
+
 }
 
 void PresentTestResult(const char* str, SM_Matrix<>& Res)
@@ -130,36 +171,137 @@ void PresentTestResult(const char* str, SM_Matrix<>& Res)
 	std::cout << str << "\n" << Res << std::endl;
 }
 
+bool CompareResult(SM_Matrix<>& result, double ref, const char* expression)
+{
+	int i, j;
+
+	for (i = 0; i < result.Nrows; i++)
+	{
+		for (j = 0; j < result.Ncolumns; j++)
+		{
+			if (abs(result[i][j] - ref) > Math::EPS_f)
+			{
+				std::cout << expression << " failed" << std::endl;
+				std::cout << "Result: \n" << result << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < result.Nrows; i++)
+				{
+					std::cout << "\n" << ref;
+					for (j = 1; j < result.Ncolumns; j++)
+					{
+						std::cout << ", " << ref;
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	std::cout << expression << " succeeded" << "\n" << result << std::endl;
+	return true;
+}
+
+bool CompareResult(double* result, double* ref, int size, const char* expression)
+{
+	int i;
+
+	for (i = 0; i < size; i++)
+	{
+		if (abs(result[i] - ref[i]) > Math::EPS_f)
+		{
+			std::cout << expression << " failed" << std::endl;
+			std::cout << "Result: " << result[0];
+		
+			for (i = 1; i < size; i++)
+			{
+				std::cout << ", " << result[i];
+			}
+			std::cout << "\n";
+
+			std::cout << "Expected result: " << ref[0];
+		
+			for (i = 1; i < size; i++)
+			{
+				std::cout << ", " << ref[i];
+			}
+			std::cout << "\n";
+		
+			return false;
+		}
+	}
+	std::cout << expression << " succeeded"  << std::endl;
+
+	std::cout << result[0];
+	for (i = 1; i < size; i++)
+	{
+		std::cout << ", " << result[i];
+	}
+	std::cout << "\n";
+
+	return true;
+}
+
 bool SM_Matrix_UT()
 {
-	bool SM_Matrix_UT_Success;
-	bool Contruction_UT_Success = false, Assignment_UT_success = false;
-	bool Addition_UT_Success = false, Subtraction_UT_Success = false;
-	bool Multiplication_UT_Success = false, Division_UT_Success = false;
-	bool Inversion_UT_Success = false;
-
-	Contruction_UT_Success = SM_Matrix_Unittests::ConstructionTest();
-	Assignment_UT_success = SM_Matrix_Unittests::AssignmentTest();
-	Addition_UT_Success = SM_Matrix_Unittests::AdditionTest();
-	Subtraction_UT_Success = SM_Matrix_Unittests::SubtractionTest();
-	Multiplication_UT_Success = SM_Matrix_Unittests::MultiplicationTest();
-	Inversion_UT_Success = SM_Matrix_Unittests::InversionTest();
-	Division_UT_Success = SM_Matrix_Unittests::DivisionTest();
-
-	SM_Matrix_UT_Success = Contruction_UT_Success && Assignment_UT_success && 
-							Addition_UT_Success && Subtraction_UT_Success && 
-							Multiplication_UT_Success && Inversion_UT_Success && Division_UT_Success;
-
-	if (SM_Matrix_UT_Success)
+	if (SM_Matrix_Unittests::ConstructionTest())
 	{
-		std::cout << "\nSM_Matrix_UT Succeeded!" << std::endl;
+		if (SM_Matrix_Unittests::AssignmentTest())
+		{
+			if (SM_Matrix_Unittests::AdditionTest())
+			{
+				if (SM_Matrix_Unittests::SubtractionTest())
+				{
+					if (SM_Matrix_Unittests::MultiplicationTest())
+					{
+						if (SM_Matrix_Unittests::InversionTest())
+						{
+							if (SM_Matrix_Unittests::DivisionTest())
+							{
+								if (SM_Matrix_Unittests::ExponentTest())
+								{
+									if (SM_Matrix_Unittests::MiscTest())
+									{
+										std::cout << "\nSM_Matrix_UT Succeeded!" << std::endl;
+										return true;
+									}
+									else
+										std::cout << "SM_Matrix UT failed on Misc test" << std::endl;
+									return false;
+								}
+								else
+									std::cout << "SM_Matrix UT failed on Exponent test" << std::endl;
+									return false;
+							}
+							else
+								std::cout << "SM_Matrix UT failed on Division test" << std::endl;
+								return false;
+						}
+						else
+							std::cout << "SM_Matrix UT failed on Inversion test" << std::endl;
+							return false;
+					}
+					else
+						std::cout << "SM_Matrix UT failed on Multiplication test" << std::endl;
+						return false;
+				}
+				else
+					std::cout << "SM_Matrix UT failed on Subtraction test" << std::endl;
+					return false;
+			}
+			else
+				std::cout << "SM_Matrix UT failed on Addition test" << std::endl;
+				return false;
+		}
+		else
+			std::cout << "SM_Matrix UT failed on Assignment test" << std::endl;
+			return false;
 	}
 	else
-	{
-		std::cout << "\nSM_Matrix_UT Failed!" << std::endl;
-	}
-
-	return SM_Matrix_UT_Success;
+		std::cout << "SM_Matrix UT failed on Construction test" << std::endl;
+		return false;
 }
 
 bool SM_Matrix_Unittests::ConstructionTest()
@@ -340,7 +482,6 @@ bool SM_Matrix_Unittests::AssignmentTest()
 		}
 	}
 	PresentTestResult("Matrix 2D copy succeeded", Mat);
-	//std::cout << "Matrix 2D copy succeeded" << std::endl;
 
 	Mat.Zeroize();
 	for (i = 0; i < Mat.Nrows; i++)
@@ -357,7 +498,6 @@ bool SM_Matrix_Unittests::AssignmentTest()
 		}
 	}
 	PresentTestResult("Matrix zeroize method succeeded", Mat);
-	//std::cout << "Matrix zeroize method succeeded" << std::endl;
 
 	Mat.Identity();
 	for (i = 0; i < Mat.Nrows; i++)
@@ -375,7 +515,6 @@ bool SM_Matrix_Unittests::AssignmentTest()
 		}
 	}
 	PresentTestResult("Matrix identity method succeeded", Mat);
-	//std::cout << "Matrix identity method succeeded" << std::endl;
 
 	Mat.Zeroize();
 
@@ -388,6 +527,7 @@ bool SM_Matrix_Unittests::AssignmentTest()
 
 bool SM_Matrix_Unittests::AdditionTest()
 {
+	bool testSuccess = false;
 	double res_arr[3][3] = { 0.0 };
 	SM_Matrix ResMat(3, 3, res_arr);
 
@@ -396,8 +536,6 @@ bool SM_Matrix_Unittests::AdditionTest()
 	SM_Matrix Addition_C(3, 3, SM_Matrix_UT_variables::Addition_C);
 	SM_Matrix Addition_D(3, 3, SM_Matrix_UT_variables::Addition_D);
 	SM_Matrix OnesMat(3, 3, SM_Matrix_UT_variables::OnesMat);
-
-	int i, j;
 
 	// Header
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
@@ -411,33 +549,10 @@ bool SM_Matrix_Unittests::AdditionTest()
 
 	ResMat = Addition_A + Addition_B;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 10.0)
-			{
-				std::cout << "A + B addition failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::Addition_ApB_Result, "A + B addition");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApB_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApB_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A + B addition succeeded", ResMat);
-	//std::cout << "A + B addition succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 
@@ -446,33 +561,10 @@ bool SM_Matrix_Unittests::AdditionTest()
 	std::cout << "C = \n" << Addition_C << std::endl;
 	ResMat = Addition_A + Addition_B + Addition_C;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 11.0)
-			{
-				std::cout << "A + B + C addition failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
-
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpC_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpC_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A + B + C addition succeeded", ResMat);
-	//std::cout << "A + B + C addition succeeded" << std::endl;
+	testSuccess = CompareResult(ResMat, 11.0, "A + B + C addition");
+	
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 
@@ -481,33 +573,10 @@ bool SM_Matrix_Unittests::AdditionTest()
 	std::cout << "D = \n" << Addition_D << std::endl;
 	ResMat = Addition_A + Addition_B + Addition_C + Addition_D;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 13.0)
-			{
-				std::cout << "A + B + C + D addition failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 13.0, "A + B + C + D addition");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A + B + C + D addition succeeded", ResMat);
-	//std::cout << "A + B + C + D addition succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	// Scalar addition
 	std::cout << "Performing: Res4 = Res3 + 1 (Scalar addition test)" << std::endl;
@@ -515,33 +584,10 @@ bool SM_Matrix_Unittests::AdditionTest()
 
 	ResMat = ResMat + 1;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 14.0)
-			{
-				std::cout << "Scalar addition failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 14.0, "Scalar addition");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpK_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpK_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Scalar addition succeeded", ResMat);
-	//std::cout << "Scalar addition succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	// Addition assignment 
 	std::cout << "Performing: Res5 = Res4 + OnesMat (Addition assignment test with SM_Matrix object)" << std::endl;
@@ -549,33 +595,10 @@ bool SM_Matrix_Unittests::AdditionTest()
 
 	ResMat += OnesMat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 15.0)
-			{
-				std::cout << "Addition assignment failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 15.0, "Addition assignment");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpOnes_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpOnes_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Addition assignment succeeded", ResMat);
-	//std::cout << "Addition assignment succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
@@ -586,6 +609,8 @@ bool SM_Matrix_Unittests::AdditionTest()
 
 bool SM_Matrix_Unittests::SubtractionTest()
 {
+	bool testSuccess = false;
+
 	double res_arr[3][3] = { 0.0 };
 	SM_Matrix ResMat(3, 3, res_arr);
 	ResMat = 15.0; // Assigning 15 to every cell in the matrix
@@ -593,8 +618,6 @@ bool SM_Matrix_Unittests::SubtractionTest()
 	SM_Matrix OnesMat(3, 3, SM_Matrix_UT_variables::OnesMat);
 	SM_Matrix Another_OnesMat(3, 3, SM_Matrix_UT_variables::MutableMat);
 	Another_OnesMat = 1.0;
-
-	int i, j;
 
 	// Header
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
@@ -608,33 +631,10 @@ bool SM_Matrix_Unittests::SubtractionTest()
 
 	ResMat = ResMat - OnesMat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 14.0)
-			{
-				std::cout << "A - B subtraction failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 14.0, "A - B subtraction");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_MatpK_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_MatpK_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A - B subtraction succeeded", ResMat);
-	//std::cout << "A - B subtraction succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	ResMat = 15.0;
 
@@ -644,33 +644,10 @@ bool SM_Matrix_Unittests::SubtractionTest()
 
 	ResMat = ResMat - OnesMat - Another_OnesMat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 13.0)
-			{
-				std::cout << "A - B - C subtraction failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 13.0, "A - B - C subtraction");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A - B - C subtraction succeeded", ResMat);
-	//std::cout << "A - B - C subtraction succeeded" << std::endl;
+	if (!testSuccess)
+		return false;
 
 	ResMat = 14.0;
 
@@ -680,32 +657,10 @@ bool SM_Matrix_Unittests::SubtractionTest()
 
 	ResMat = ResMat - 1;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 13.0)
-			{
-				std::cout << "Scalar subtraction failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 13.0, "Scalar subtraction");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Scalar subtraction succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	ResMat = 14.0;
 
@@ -715,32 +670,10 @@ bool SM_Matrix_Unittests::SubtractionTest()
 
 	ResMat -= OnesMat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 13.0)
-			{
-				std::cout << "Subtraction assignment failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 13.0, "Subtraction assignment");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Addition_ApBpCpD_Result[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Subtraction assignment succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
@@ -753,10 +686,13 @@ bool SM_Matrix_Unittests::SubtractionTest()
 
 bool SM_Matrix_Unittests::MultiplicationTest()
 {
-	double res_arr[4][4] = { 0.0 };
+	bool testSuccess = false;
+
+	double res_arr[4][4] = { 0.0 }, res_arr2[3][3] = { 0.0 };
 	double ones_arr[4][4] = { 0.0 };
 	double Eye_x2_arr[4][4] = { 0.0 };
-	SM_Matrix ResMat(4, 4, res_arr);
+	double VecIn[3] = { 1.0, 2.0, 3.0 }, VecOut[3] = { 4.0, 5.0, 6.0 };
+	SM_Matrix ResMat(4, 4, res_arr), ResMat2(3, 3, res_arr2);
 	SM_Matrix OnesMat(4, 4, ones_arr);
 	SM_Matrix Eye_x2_Mat(4, 4, Eye_x2_arr);
 
@@ -781,32 +717,10 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 
 	ResMat = Multiplication_right * Multiplication_left;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != SM_Matrix_UT_variables::Multiplication_ref_2[i][j])
-			{
-				std::cout << "A * B Multiplication failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::Multiplication_ref_2, "A * B Multiplication");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Multiplication_ref_2[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Multiplication_ref_2[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A * B Multiplication succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	// A * B * C
 	std::cout << "Performing: ResMat = A * B * C" << std::endl;
@@ -814,32 +728,10 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 
 	ResMat = Multiplication_right * Multiplication_left * Eye_x2_Mat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != SM_Matrix_UT_variables::Multiplication_ref_4[i][j])
-			{
-				std::cout << "A * B * C Multiplication failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::Multiplication_ref_4, "A * B * C Multiplication");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Multiplication_ref_4[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Multiplication_ref_4[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A * B * C Multiplication succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 
@@ -849,32 +741,10 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 
 	ResMat = Multiplication_right * Multiplication_left + OnesMat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != SM_Matrix_UT_variables::Multiplication_ref3[i][j])
-			{
-				std::cout << "A * B + C Multiplication failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::Multiplication_ref_3, "A * B + C Multiplication");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Multiplication_ref3[i][0];
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Multiplication_ref3[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("A * B + C Multiplication succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 	ResMat = 1.0;
@@ -886,32 +756,10 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 
 	ResMat *= Eye_x2_Mat;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 2.0)
-			{
-				std::cout << "Matrix multiplication assignment failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 2.0, "Matrix multiplication assignment");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << 2.0;
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << 2.0;
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Matrix multiplication assignment succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 
@@ -921,32 +769,10 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 	ResMat = 1.0;
 	ResMat = ResMat * 2.0;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 2.0)
-			{
-				std::cout << "Scalar multiplication failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 2.0, "Scalar multiplication");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << 2.0;
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << 2.0;
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Scalar multiplication succeeded", ResMat);
+	if (!testSuccess)
+		return false;
 
 	ResMat.Zeroize();
 
@@ -956,32 +782,22 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 	ResMat = 1.0;
 	ResMat *= 2.0;
 
-	for (i = 0; i < ResMat.Nrows; i++)
-	{
-		for (j = 0; j < ResMat.Ncolumns; j++)
-		{
-			if (ResMat[i][j] != 2.0)
-			{
-				std::cout << "Scalar multiplication assignment failed" << std::endl;
-				std::cout << "Result: \n" << ResMat << std::endl;
+	testSuccess = CompareResult(ResMat, 2.0, "Scalar multiplication assignment");
 
-				std::cout << "Expected result:";
+	if (!testSuccess)
+		return false;
 
-				for (i = 0; i < ResMat.Nrows; i++)
-				{
-					std::cout << "\n" << 2.0;
-					for (j = 1; j < ResMat.Ncolumns; j++)
-					{
-						std::cout << ", " << 2.0;
-					}
-				}
-				std::cout << "\n";
+	// Scalar multiplication assignment
+	ResMat2 = 1;
+	std::cout << "Performing: Matrix multiplication be vector:\n" << ResMat2 << std::endl;
+	std::cout << "with:\n" << VecIn[0] << ", " << VecIn[1] << ", " << VecIn[2] << std::endl;
 
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Scalar multiplication assignment succeeded", ResMat);
+	ResMat2.MatxVec(VecIn, VecOut);
+
+	testSuccess = CompareResult(VecOut, SM_Matrix_UT_variables::MatxVec_ref, 3, "Matrix multiplication beyvector");
+
+	if (!testSuccess)
+		return false;
 
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
@@ -992,10 +808,12 @@ bool SM_Matrix_Unittests::MultiplicationTest()
 
 bool SM_Matrix_Unittests::InversionTest()
 {
-	double ResMat_arr[4][4] = { 0.0 }, InvMat_arr[4][4] = { 0.0 }, L_arr[4][4] = { 0.0 }, U_arr[4][6] = { 0.0 };
+	bool testSuccess = false;
+
+	double ResMat_arr[4][4] = { 0.0 }, InvMat_arr[4][4] = { 0.0 }, T_arr[6][4] = { 0.0 }, L_arr[4][4] = { 0.0 }, U_arr[4][6] = { 0.0 };
 	SM_Matrix ResMat(4, 4, ResMat_arr), InvMat(4, 4, InvMat_arr);
 	SM_Matrix LU_Mat(4, 6, SM_Matrix_UT_variables::LU_ref);
-	SM_Matrix L_Mat(4, 4, L_arr), U_Mat(4, 6, U_arr);
+	SM_Matrix T_Mat(6, 4, T_arr), L_Mat(4, 4, L_arr), U_Mat(4, 6, U_arr);
 
 	int i, j;
 	double DetVal = 0;
@@ -1005,63 +823,52 @@ bool SM_Matrix_Unittests::InversionTest()
 	std::cout << "------------------------------- Inversion Unittest -----------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 
+	// Transpose
+	std::cout << "Performing: matrix transpose on:\n" << LU_Mat << std::endl;
+	
+	T_Mat = LU_Mat.Transpose();
+
+	for (i = 0; i < T_Mat.Nrows; i++)
+	{
+		for (j = 0; j < T_Mat.Ncolumns; j++)
+		{
+			if (T_Mat[i][j] != SM_Matrix_UT_variables::LU_ref[j][i])
+			{
+				std::cout << "Matrix transpose failed" << std::endl;
+				std::cout << "Result: \n" << T_Mat << std::endl;
+
+				std::cout << "Expected result:";
+
+				for (i = 0; i < T_Mat.Nrows; i++)
+				{
+					std::cout << "\n" << SM_Matrix_UT_variables::U_ref[j][0];
+					for (j = 1; j < T_Mat.Ncolumns; j++)
+					{
+						std::cout << ", " << SM_Matrix_UT_variables::U_ref[j][i];
+					}
+				}
+				std::cout << "\n";
+
+				return false;
+			}
+		}
+	}
+	PresentTestResult("Matrix transpose succeeded", T_Mat);
+
 	// LU decompusition
 	std::cout << "Performing: LU decomposition on LU reference:\n" << LU_Mat << std::endl;
 
 	LU_Mat.LU_Decompose(L_Mat, U_Mat);
 
-	for (i = 0; i < L_Mat.Nrows; i++)
-	{
-		for (j = 0; j < L_Mat.Ncolumns; j++)
-		{
-			if (L_Mat[i][j] != SM_Matrix_UT_variables::L_ref[i][j])
-			{
-				std::cout << "LU decomposition failed (L)" << std::endl;
-				std::cout << "Result: \n" << L_Mat << std::endl;
+	testSuccess = CompareResult(L_Mat, SM_Matrix_UT_variables::L_ref, "LU decomposition (L)");
 
-				std::cout << "Expected result:";
+	if (!testSuccess)
+		return false;
 
-				for (i = 0; i < L_Mat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::L_ref[i][0];
-					for (j = 1; j < L_Mat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::L_ref[i][j];
-					}
-				}
-				std::cout << "\n";
+	testSuccess = CompareResult(U_Mat, SM_Matrix_UT_variables::U_ref, "LU decomposition (U)");
 
-				return false;
-			}
-		}
-	}
-	for (i = 0; i < U_Mat.Nrows; i++)
-	{
-		for (j = 0; j < U_Mat.Ncolumns; j++)
-		{
-			if (U_Mat[i][j] != SM_Matrix_UT_variables::U_ref[i][j])
-			{
-				std::cout << "LU decomposition failed (U)" << std::endl;
-				std::cout << "Result: \n" << U_Mat << std::endl;
-
-				std::cout << "Expected result:";
-
-				for (i = 0; i < U_Mat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::U_ref[i][0];
-					for (j = 1; j < U_Mat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::U_ref[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("LU decomposition succeeded\n L:", L_Mat);
-	std::cout << "U:\n" << U_Mat << std::endl;
+	if (!testSuccess)
+		return false;
 
 	ResMat = &SM_Matrix_UT_variables::Invertible_ref[0][0];
 
@@ -1075,6 +882,7 @@ bool SM_Matrix_Unittests::InversionTest()
 		std::cout << "Determinant calculation failed" << std::endl;
 		std::cout << "Result - " << DetVal << std::endl;
 		std::cout << "Expected value - " << 16.0 << std::endl;
+		return false;
 	}
 	else
 	{
@@ -1086,53 +894,249 @@ bool SM_Matrix_Unittests::InversionTest()
 
 	InvMat = ResMat.Invert();
 
-	for (i = 0; i < InvMat.Nrows; i++)
-	{
-		for (j = 0; j < InvMat.Ncolumns; j++)
-		{
-			if (InvMat[i][j] != SM_Matrix_UT_variables::Inverse_ref[i][j])
-			{
-				std::cout << "Matrix inversion" << std::endl;
-				std::cout << "Result: \n" << InvMat << std::endl;
+	testSuccess = CompareResult(InvMat, SM_Matrix_UT_variables::Inverse_ref, "Matrix inversion");
 
-				std::cout << "Expected result:";
-
-				for (i = 0; i < InvMat.Nrows; i++)
-				{
-					std::cout << "\n" << SM_Matrix_UT_variables::Inverse_ref[i][0];
-					for (j = 1; j < InvMat.Ncolumns; j++)
-					{
-						std::cout << ", " << SM_Matrix_UT_variables::Inverse_ref[i][j];
-					}
-				}
-				std::cout << "\n";
-
-				return false;
-			}
-		}
-	}
-	PresentTestResult("Matrix inversion succeeded", InvMat);
+	if (!testSuccess)
+		return false;
 
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "\n";
 
-	return false;
+	return true;
 }
 
 bool SM_Matrix_Unittests::DivisionTest()
 {
+	bool testSuccess = false;
+
+	double ResMat_arr[4][4] = { 0.0 };
+	SM_Matrix ResMat(4, 4, ResMat_arr);
 
 	// Header
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "------------------------------- Division Unittest ------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 
-	//
+	// Scalar division
+	ResMat = 5.0;
+	std::cout << "Performing: Scalar division on:\n" << ResMat << std::endl;
+
+	ResMat = ResMat / 5.0;
+
+	testSuccess = CompareResult(ResMat, 1.0, "Scalar division");
+
+	if (!testSuccess)
+		return false;
+
+	// Scalar division assignment
+	ResMat = 5.0;
+	std::cout << "Performing: Scalar division assignment on:\n" << ResMat << std::endl;
+
+	ResMat /= 5.0;
+
+	testSuccess = CompareResult(ResMat, 1.0, "Scalar division assignment");
+
+	if (!testSuccess)
+		return false;
+
+	// 'Division' by Matrix (Multiplication with inverse)
+	ResMat = &SM_Matrix_UT_variables::Invertible_ref[0][0];
+	std::cout << "Performing: Division by matrix (multiply by inverse) on:\n" << ResMat << std::endl;
+	std::cout << "with:\n" << ResMat << std::endl;
+
+	ResMat = ResMat / ResMat;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EYE4_ref, "Division by matrix (multiply by inverse)");
+
+	if (!testSuccess)
+		return false;
+
+	// 'Division'assignment by Matrix (Multiplication with inverse)
+	ResMat = &SM_Matrix_UT_variables::Invertible_ref[0][0];
+	std::cout << "Performing: Division assignment by matrix (multiply assign by inverse) on:\n" << ResMat << std::endl;
+	std::cout << "with:\n" << ResMat << std::endl;
+
+	ResMat /= ResMat;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EYE4_ref, "Division assignment by matrix (multiply assign by inverse)");
+
+	if (!testSuccess)
+		return false;
 
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	std::cout << "\n";
 
-	return false;
+	return true;
+}
+
+bool SM_Matrix_Unittests::ExponentTest()
+{
+	bool testSuccess = false;
+
+	double ResMat_arr[3][3] = { 0.0 };
+	SM_Matrix ResMat(3, 3, ResMat_arr);
+
+	// Header
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "------------------------------- Exponent Unittest ------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+	// Positive exponentiation
+	ResMat = &SM_Matrix_UT_variables::EYE3x2[0][0];
+	std::cout << "Performing: Positive exponentiation on:\n" << ResMat << std::endl;
+	std::cout << "by:\n" << 4 << std::endl;
+
+	ResMat = ResMat ^ 4;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EYE3x16, "Positive exponentiation");
+
+	if (!testSuccess)
+		return false;
+
+	// Positive exponentiation assignment
+	ResMat = &SM_Matrix_UT_variables::EYE3x2[0][0];
+	std::cout << "Performing: Positive exponentiation assignment on:\n" << ResMat << std::endl;
+	std::cout << "by:\n" << 4 << std::endl;
+
+	ResMat ^= 4;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EYE3x16, "Positive exponentiation assignment");
+
+	if (!testSuccess)
+		return false;
+
+	// Negative exponentiation
+	std::cout << "Performing: Negative exponentiation on:\n" << ResMat << std::endl;
+	std::cout << "by:\n" << -1 << std::endl;
+
+	ResMat = ResMat ^ -1;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::NegExp3, "Negative exponentiation");
+
+	if (!testSuccess)
+		return false;
+
+	// Negative exponentiation assignment
+	ResMat = &SM_Matrix_UT_variables::EYE3x16[0][0];
+	std::cout << "Performing: Negative exponentiation assignment on:\n" << ResMat << std::endl;
+	std::cout << "by:\n" << -1 << std::endl;
+
+	ResMat ^= -1;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::NegExp3, "Negative exponentiation assignment");
+
+	if (!testSuccess)
+		return false;
+
+	// Null Exponentiation (to the power of 0)
+	std::cout << "Performing: Null Exponentiation (to the power of 0) on:\n" << ResMat << std::endl;
+
+	ResMat = ResMat ^ 0;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::ID_ref, "Null exponentiation");
+
+	if (!testSuccess)
+		return false;
+
+	// Null Exponentiation assignment (to the power of 0)
+	ResMat = &SM_Matrix_UT_variables::NegExp3[0][0];
+	std::cout << "Performing: Null exponentiation assignment (to the power of 0) on:\n" << ResMat << std::endl;
+
+	ResMat ^= 0;
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::ID_ref, "Null exponentiation assignment");
+
+	if (!testSuccess)
+		return false;
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "\n";
+
+	return true;
+}
+
+bool SM_Matrix_Unittests::MiscTest()
+{
+	bool testSuccess = false;
+	double ResMat_arr[3][3] = { 0.0 };
+	double Trace = 0;
+	SM_Matrix ResMat(3, 3, ResMat_arr), Mat_operand1(3, 3, SM_Matrix_UT_variables::EMult_operand), Mat_operand2(3, 3, SM_Matrix_UT_variables::EMult_operand);
+	
+
+	// Header
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------- Misc Unittest --------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+
+	// EMultiply
+	ResMat = &SM_Matrix_UT_variables::EMult_operand[0][0];
+	std::cout << "Performing: element-wise multiplication on:\n" << Mat_operand1 << std::endl;
+	std::cout << "With:\n" << Mat_operand2 << std::endl;
+
+	ResMat = Mat_operand1.EMultiply(Mat_operand2);
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EMult_ref, "element-wise multiplication");
+
+	if (!testSuccess)
+		return false;
+
+	// EDivide
+	std::cout << "Performing: element-wise division on:\n" << ResMat << std::endl;
+	std::cout << "With:\n" << Mat_operand1 << std::endl;
+
+	ResMat = ResMat.EDivide(Mat_operand1);
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::EMult_operand, "element-wise division");
+
+	if (!testSuccess)
+		return false;
+
+	// Trace
+	std::cout << "Performing: trace on:\n" << ResMat << std::endl;
+
+	Trace = ResMat.Trace();
+
+	if (Trace != 15.0)
+	{
+		std::cout << "Trace calculation failed" << std::endl;
+		std::cout << "Result - " << Trace << std::endl;
+		std::cout << "Expected value - " << 16.0 << std::endl;
+		return false;
+	}
+	else
+	{
+		std::cout << "Trace calculation succeeded" << "\n" << Trace << std::endl;
+	}
+
+	// ApplyEach single argument (argument pass by value)
+	ResMat = &SM_Matrix_UT_variables::ApplyEach_Input[0][0];
+	std::cout << "Performing: element-wise function application (sin) on:\n" << ResMat << std::endl;
+
+	ResMat = ResMat.ApplyEach(sin);
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::ApplyEach_ref, "element-wise function application (sin)");
+
+	if (!testSuccess)
+		return false;
+
+	// ApplyEach double argument (arguments pass by value)
+	ResMat = &SM_Matrix_UT_variables::ApplyEach_Input[0][0];
+	std::cout << "Performing: element-wise 2-argument function application (fmax) on:\n" << ResMat << std::endl;
+	std::cout << "(max(x[i][j],1.0))" << std::endl;
+	
+	ResMat = ResMat.ApplyEach(fmax,1.0);
+
+	testSuccess = CompareResult(ResMat, SM_Matrix_UT_variables::ApplyEach_2ndarg_ref, "element-wise 2-argument function application (fmax)");
+
+	if (!testSuccess)
+		return false;
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "\n";
+
+	return true;
 }

@@ -762,7 +762,8 @@ namespace Math {
         /* Calculates the adjugate (cofactor) matrix */
         Matrix Adjugate()
         {
-            Matrix Adj(Nrows, Ncolumns), Minor(Nrows - 1, Ncolumns - 1);
+            Matrix Adj(Nrows, Ncolumns);
+            //Matrix Minor(Nrows - 1, Ncolumns - 1);
             int i, j;
             Type sign;
             BOOLEAN ODD;
@@ -772,8 +773,8 @@ namespace Math {
                     ODD = ((i + 1) + (j + 1)) % 2;
                     sign = ODD ? -1 : 1;
 
-                    Minor.FastCopy(this->Minor(i, j));
-                    Adj.Mat[j * Nrows + i] = sign * Minor.Det();
+                    //Minor.FastCopy(Minor(i, j));
+                    Adj.Mat[j * Nrows + i] = sign * Minor(i,j).Det();
                 }
             }
             return Adj;
@@ -782,7 +783,7 @@ namespace Math {
         /* Calculates the inverse of the matrix instance */
         Matrix Invert()
         {
-            Type MatDet = this->Det();
+            Type MatDet = Det();
 #ifdef _MATRIX_DEBUG
             if (MatDet == 0) {
                 std::cout << "Error: Matrix is irreversible, cannot perform inversion." << std::endl;
@@ -791,7 +792,7 @@ namespace Math {
 #endif
 
             Matrix MInverse(Nrows, Ncolumns);
-            MInverse.FastCopy(this->Adjugate());
+            MInverse.FastCopy(Adjugate());
             MInverse /= MatDet;
 
             return MInverse;
@@ -803,7 +804,7 @@ namespace Math {
             Matrix Q(Nrows, Ncolumns), R(Ncolumns, Ncolumns);
             int i, j, Rank = 0;
 
-            this->QR_Decompose(Q, R);
+            QR_Decompose(Q, R);
 
             /* Analyazing R's rows to check how many are fully zeroed */
             for (i = 0; i < R.Ncolumns; i++) {
