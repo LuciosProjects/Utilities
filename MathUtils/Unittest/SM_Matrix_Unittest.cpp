@@ -1,4 +1,4 @@
-﻿#include "Utilities.h"
+﻿#include "SM_Matrix_Unittest.h"
 
 /****************************************************************/
 /********************** Unittest references *********************/
@@ -152,26 +152,26 @@ namespace SM_Matrix_UT_variables
 								{ 49.0, 64.0, 81.0 } };
 
 	// ApplyEach
-	double ApplyEach_Input[3][3] = {{ Math::PI / 6.0,	0.0,			0.0 },
-									{ 0.0,				Math::PI / 2.0,	0.0 },
-									{ 0.0,				0.0,			Math::PI } };
+	double ApplyEach_Input[3][3] = {{ _SM_Matrix_PI / 6.0,	0.0,			0.0 },
+									{ 0.0,				_SM_Matrix_PI / 2.0,	0.0 },
+									{ 0.0,				0.0,			_SM_Matrix_PI } };
 
 	double ApplyEach_ref[3][3] = {	{	0.5,	0.0,	0.0 },
 									{	0.0,	1.0,	0.0 },
 									{	0.0,	0.0,	0.0 } };
 
 	double ApplyEach_2ndarg_ref[3][3] = {	{ 1.0,	1.0,			1.0 },
-											{ 1.0,	Math::PI / 2.0,	1.0 },
-											{ 1.0,	1.0,			Math::PI } };
+											{ 1.0,	_SM_Matrix_PI / 2.0,	1.0 },
+											{ 1.0,	1.0,			_SM_Matrix_PI } };
 
 }
 
-void PresentTestResult(const char* str, SM_Matrix<>& Res)
+void PresentTestResult(const char* str, SM_Matrix& Res)
 {
 	std::cout << str << "\n" << Res << std::endl;
 }
 
-bool CompareResult(SM_Matrix<>& result, double ref, const char* expression)
+bool CompareResult(SM_Matrix& result, double ref, const char* expression)
 {
 	int i, j;
 
@@ -179,7 +179,7 @@ bool CompareResult(SM_Matrix<>& result, double ref, const char* expression)
 	{
 		for (j = 0; j < result.Ncolumns; j++)
 		{
-			if (abs(result[i][j] - ref) > Math::EPS_f)
+			if (abs(result[i][j] - ref) > 1e-6)
 			{
 				std::cout << expression << " failed" << std::endl;
 				std::cout << "Result: \n" << result << std::endl;
@@ -210,7 +210,7 @@ bool CompareResult(double* result, double* ref, int size, const char* expression
 
 	for (i = 0; i < size; i++)
 	{
-		if (abs(result[i] - ref[i]) > Math::EPS_f)
+		if (abs(result[i] - ref[i]) > 1e-6)
 		{
 			std::cout << expression << " failed" << std::endl;
 			std::cout << "Result: " << result[0];

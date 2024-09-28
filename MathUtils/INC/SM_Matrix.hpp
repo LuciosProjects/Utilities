@@ -57,7 +57,6 @@ public:
         return instance;
     }
 
-
     // Get the current available buffer
     BufferHandle getNextBuffer() {
         std::lock_guard<std::mutex> lock(mtx);

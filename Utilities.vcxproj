@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -156,7 +156,8 @@
     <ClInclude Include="MathUtils\INC\Matrix.h" />
     <ClInclude Include="MathUtils\INC\Quaternion.h" />
     <ClInclude Include="MathUtils\INC\SM_Matrix.hpp" />
-    <ClInclude Include="MathUtils_Unittests.h" />
+    <ClInclude Include="MathUtils\Unittest\MathUtils_Unittests.h" />
+    <ClInclude Include="MathUtils\Unittest\SM_Matrix_Unittest.h" />
     <ClInclude Include="OtherTools\INC\TransferFunc.h" />
     <ClInclude Include="TypeDefinitions.h" />
     <ClInclude Include="Utilities.h" />
@@ -168,8 +169,8 @@
     <ClCompile Include="MathUtils\SRC\MathUtils.cpp" />
     <ClCompile Include="MathUtils\SRC\Matrix.cpp" />
     <ClCompile Include="MathUtils\SRC\Quaternion.cpp" />
+    <ClCompile Include="MathUtils\Unittest\SM_Matrix_Unittest.cpp" />
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp" />
-    <ClCompile Include="SM_Matrix_Unittest.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -40,6 +40,9 @@
     <Filter Include="OtherTools\SRC">
       <UniqueIdentifier>{b0a64ba2-6923-4c01-80bf-517fa52d7c63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MathUtils\Unittest">
+      <UniqueIdentifier>{039ea14c-0faf-419e-ba40-1c6416faf269}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonGlobals.h">
@@ -78,11 +81,14 @@
     <ClInclude Include="OtherTools\INC\TransferFunc.h">
       <Filter>OtherTools\INC</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtils_Unittests.h">
-      <Filter>MathUtils\INC</Filter>
-    </ClInclude>
     <ClInclude Include="MathUtils\INC\SM_Matrix.hpp">
       <Filter>MathUtils\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\Unittest\SM_Matrix_Unittest.h">
+      <Filter>MathUtils\Unittest</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\Unittest\MathUtils_Unittests.h">
+      <Filter>MathUtils\Unittest</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -107,8 +113,8 @@
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp">
       <Filter>OtherTools\SRC</Filter>
     </ClCompile>
-    <ClCompile Include="SM_Matrix_Unittest.cpp">
-      <Filter>MathUtils\SRC</Filter>
+    <ClCompile Include="MathUtils\Unittest\SM_Matrix_Unittest.cpp">
+      <Filter>MathUtils\Unittest</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
