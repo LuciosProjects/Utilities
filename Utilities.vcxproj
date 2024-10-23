@@ -156,8 +156,6 @@
     <ClInclude Include="MathUtils\INC\Matrix.h" />
     <ClInclude Include="MathUtils\INC\Quaternion.h" />
     <ClInclude Include="MathUtils\INC\SM_Matrix.hpp" />
-    <ClInclude Include="MathUtils\Unittest\MathUtils_Unittests.h" />
-    <ClInclude Include="MathUtils\Unittest\SM_Matrix_Unittest.h" />
     <ClInclude Include="OtherTools\INC\TransferFunc.h" />
     <ClInclude Include="OtherTools\NNLib\Network.hpp" />
     <ClInclude Include="OtherTools\NNLib\NNActivationFunctions.hpp" />
@@ -173,7 +171,6 @@
     <ClCompile Include="MathUtils\SRC\MathUtils.cpp" />
     <ClCompile Include="MathUtils\SRC\Matrix.cpp" />
     <ClCompile Include="MathUtils\SRC\Quaternion.cpp" />
-    <ClCompile Include="MathUtils\Unittest\SM_Matrix_Unittest.cpp" />
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
