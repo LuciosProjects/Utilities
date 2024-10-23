@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_MATRIX_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -159,6 +159,10 @@
     <ClInclude Include="MathUtils\Unittest\MathUtils_Unittests.h" />
     <ClInclude Include="MathUtils\Unittest\SM_Matrix_Unittest.h" />
     <ClInclude Include="OtherTools\INC\TransferFunc.h" />
+    <ClInclude Include="OtherTools\NNLib\Network.hpp" />
+    <ClInclude Include="OtherTools\NNLib\NNActivationFunctions.hpp" />
+    <ClInclude Include="OtherTools\NNLib\NNLayer.h" />
+    <ClInclude Include="OtherTools\NNLib\NNLib.h" />
     <ClInclude Include="TypeDefinitions.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="UtilitiesVer.h" />

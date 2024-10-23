@@ -43,6 +43,9 @@
     <Filter Include="MathUtils\Unittest">
       <UniqueIdentifier>{039ea14c-0faf-419e-ba40-1c6416faf269}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OtherTools\NNLib">
+      <UniqueIdentifier>{bdb7952e-0ac5-4c3f-8b3f-9c0f1f2132eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonGlobals.h">
@@ -89,6 +92,18 @@
     </ClInclude>
     <ClInclude Include="MathUtils\Unittest\MathUtils_Unittests.h">
       <Filter>MathUtils\Unittest</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNLayer.h">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNLib.h">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\Network.hpp">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNActivationFunctions.hpp">
+      <Filter>OtherTools\NNLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
