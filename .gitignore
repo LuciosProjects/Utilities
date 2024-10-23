@@ -11,3 +11,4 @@
 *.pdb
 *.lastbuildstate
 /UtilitiesTestApp/x64
+/packages
