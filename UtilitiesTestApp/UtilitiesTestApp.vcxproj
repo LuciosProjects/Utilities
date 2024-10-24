@@ -91,13 +91,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;$(SolutionDir)Utilities_UT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Utilities.lib</AdditionalDependencies>
+      <AdditionalDependencies>Utilities.lib;Utilities_UT.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;$(SolutionDir)Utilities_UT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -117,7 +117,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Utilities.lib</AdditionalDependencies>
+      <AdditionalDependencies>Utilities.lib;Utilities_UT.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -127,13 +127,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;$(SolutionDir)Utilities_UT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Utilities.lib</AdditionalDependencies>
+      <AdditionalDependencies>Utilities.lib;Utilities_UT.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -145,7 +145,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)MathUtils\INC;$(SolutionDir)MathUtils\Unittest;$(SolutionDir)Environment\INC;$(SolutionDir)OtherTools\INC;$(SolutionDir)OtherTools\NNLib;$(SolutionDir)Utilities_UT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -153,7 +153,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Utilities.lib</AdditionalDependencies>
+      <AdditionalDependencies>Utilities.lib;Utilities_UT.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

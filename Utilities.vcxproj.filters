@@ -45,7 +45,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Environment\INC\EarthGeometry.h">
+      <Filter>Environment\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment\INC\EnvironmentIncludes.h">
+      <Filter>Environment\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment\INC\Atmosphere.h">
+      <Filter>Environment\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\INC\Matrix.h">
+      <Filter>MathUtils\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\INC\Quaternion.h">
+      <Filter>MathUtils\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\INC\SM_Matrix.hpp">
+      <Filter>MathUtils\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtils\INC\MathUtils.h">
+      <Filter>MathUtils\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\INC\TransferFunc.h">
+      <Filter>OtherTools\INC</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\Network.hpp">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNActivationFunctions.hpp">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNLayer.h">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherTools\NNLib\NNLib.h">
+      <Filter>OtherTools\NNLib</Filter>
+    </ClInclude>
     <ClInclude Include="CommonGlobals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TypeDefinitions.h">
@@ -54,54 +93,15 @@
     <ClInclude Include="Utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Environment\INC\Atmosphere.h">
-      <Filter>Environment\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="Environment\INC\EnvironmentIncludes.h">
-      <Filter>Environment\INC</Filter>
-    </ClInclude>
     <ClInclude Include="UtilitiesVer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CommonStructs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MathUtils\INC\MathUtils.h">
-      <Filter>MathUtils\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="MathUtils\INC\Matrix.h">
-      <Filter>MathUtils\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="MathUtils\INC\Quaternion.h">
-      <Filter>MathUtils\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="Environment\INC\EarthGeometry.h">
-      <Filter>Environment\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherTools\INC\TransferFunc.h">
-      <Filter>OtherTools\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="MathUtils\INC\SM_Matrix.hpp">
-      <Filter>MathUtils\INC</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherTools\NNLib\NNLayer.h">
-      <Filter>OtherTools\NNLib</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherTools\NNLib\NNLib.h">
-      <Filter>OtherTools\NNLib</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherTools\NNLib\Network.hpp">
-      <Filter>OtherTools\NNLib</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherTools\NNLib\NNActivationFunctions.hpp">
-      <Filter>OtherTools\NNLib</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Environment\SRC\Atmosphere.cpp">
+      <Filter>Environment\SRC</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment\SRC\EarthGeometry.cpp">
       <Filter>Environment\SRC</Filter>
     </ClCompile>
     <ClCompile Include="MathUtils\SRC\Matrix.cpp">
@@ -113,11 +113,11 @@
     <ClCompile Include="MathUtils\SRC\MathUtils.cpp">
       <Filter>MathUtils\SRC</Filter>
     </ClCompile>
-    <ClCompile Include="Environment\SRC\EarthGeometry.cpp">
-      <Filter>Environment\SRC</Filter>
-    </ClCompile>
     <ClCompile Include="OtherTools\SRC\TransferFunc.cpp">
       <Filter>OtherTools\SRC</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -11,15 +11,20 @@ std::string GetUtilitiesVer()
 /******************************************************************************/
 /******************************* Time Utilities *******************************/
 /******************************************************************************/
-Char* Utilities::Time::GetDateTime()
+std::string Utilities::Time::GetDateTime()
 {
-	Char* Time;
+	std::tm timeStruct;
+	Char buffer[_UTILITIES_CHAR_BUFFER_LEN];
 
 	std::chrono::system_clock::time_point CurrentTime = std::chrono::system_clock::now();
 	std::time_t DateTime = std::chrono::system_clock::to_time_t(CurrentTime);
 
-	Time = std::ctime(&DateTime);
-	return Time;
+	// Convert to a tm structure for formatting
+	localtime_s(&timeStruct, &DateTime);  // Thread-safe version of localtime
+
+	std::strftime(buffer, sizeof(buffer), "%Y\\%m\\%d %H:%M:%S", &timeStruct);
+
+	return std::string(buffer);
 }
 
 std::chrono::high_resolution_clock::time_point Utilities::Time::TStart()

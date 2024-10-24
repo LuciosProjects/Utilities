@@ -59,6 +59,9 @@
 #define LOGERROR(msg)			(std::cout << "Error in " << __FUNCTION__ << ", " << msg << std::endl)
 #define LENGTH(Vec)				(UInt32)(sizeof(Vec)/sizeof(Vec[0]))
 
+
+#define _UTILITIES_CHAR_BUFFER_LEN 100
+
 enum InterpType
 {
 	IT_Inbounds,
@@ -74,7 +77,8 @@ namespace Utilities
 
 		static std::chrono::high_resolution_clock::time_point Stop;
 
-		Char* GetDateTime();
+		//Char* GetDateTime();
+		std::string GetDateTime();
 		std::chrono::high_resolution_clock::time_point TStart();
 		UInt64x2 GetDuration(std::chrono::high_resolution_clock::time_point Start);
 		//void TStop(const std::chrono::high_resolution_clock::time_point Start);
